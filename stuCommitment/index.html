@@ -386,6 +386,46 @@
             margin-bottom: 15px;
             color: #2d3748;
         }
+
+        .update-notice {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .update-notice::before {
+            content: "⚠️";
+            font-size: 24px;
+            position: absolute;
+            top: 15px;
+            left: 20px;
+        }
+
+        .update-notice-content {
+            margin-left: 40px;
+        }
+
+        .update-notice h4 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .update-notice p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .update-notice .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -396,6 +436,16 @@
         <div style="text-align: center; margin-bottom: 20px; background: rgba(255,255,255,0.8); padding: 15px; border-radius: 10px;">
             <p style="margin: 5px 0; color: #4a5568; font-weight: 600;">포스텍 화학과 행정팀 배포</p>
             <p style="margin: 5px 0; color: #718096; font-size: 0.9rem;">문의사항 및 오류신고는 학과 행정팀으로 연락주세요</p>
+        </div>
+        
+        <!-- 업데이트 공지 -->
+        <div class="update-notice">
+            <div class="update-notice-content">
+                <h4>중요 업데이트 알림</h4>
+                <p><span class="highlight">수정사항:</span> 동일한 학생이 같은 WBS 번호로 여러 기간에 걸쳐 다른 금액을 지급받는 것이 허용됩니다.</p>
+                <p>기존의 <span class="highlight">"이미 등록된 학번과 WBS 조합입니다"</span> 제한이 제거되었습니다.</p>
+                <p>예시: '홍길동' 학생이 9월~11월 60만원, 12월~2월 160만원을 같은 WBS에서 지급받을 수 있습니다.</p>
+            </div>
         </div>
         
         <!-- 단계 표시기 -->
@@ -464,7 +514,7 @@
                 <div class="upload-item">
                     <h4>👨‍🎓 학생 정보 파일</h4>
                     <div class="alert alert-warning" style="font-size: 0.9rem; padding: 10px;">
-                        <strong>필수 컬럼:</strong> 학번, 이름, 과정, 학기, 학적상태, 지급기준, 기준금액(월)
+                        <strong>필수 컬럼:</strong> 학번, 이름, 과정, 학기, 학적상태, 지급기준, 기준금액(원)
                     </div>
                     <div class="file-upload" id="student-upload">
                         <div style="font-size: 36px; margin-bottom: 10px;">👥</div>
@@ -1155,21 +1205,14 @@
             });
         }
 
-        // 학생 추가
+        // 학생 추가 (중복 체크 로직 제거됨)
         function addStudent() {
             if (!validateForm()) return;
 
             const studentData = collectFormData();
             
-            // 중복 확인 (학번 + WBS 조합)
-            const duplicate = registeredStudents.find(s => 
-                s.studentId === studentData.studentId && s.wbsElement === studentData.wbsElement
-            );
-            
-            if (duplicate) {
-                alert('이미 등록된 학번과 WBS 조합입니다.');
-                return;
-            }
+            // 기존의 중복 체크 로직을 제거했습니다.
+            // 이제 동일한 학생이 같은 WBS로 여러 번 등록 가능합니다.
 
             registeredStudents.push(studentData);
             updateStudentsList();
