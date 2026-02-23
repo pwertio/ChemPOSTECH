@@ -30,6 +30,30 @@
     --block: #ef4444;
     --shadow: 0 4px 24px rgba(0,0,0,0.4);
   }
+  
+  /* ===== 라이트 모드 ===== */
+  body.light-mode {
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8F9FA;
+    --bg-card: #FFFFFF;
+    --bg-card2: #F1F3F5;
+    --accent-blue: #0D6EFD;
+    --accent-cyan: #0DCAF0;
+    --accent-indigo: #6610F2;
+    --accent-emerald: #198754;
+    --accent-amber: #FFC107;
+    --accent-red: #DC3545;
+    --accent-purple: #6F42C1;
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-muted: #6C757D;
+    --border: #DEE2E6;
+    --border-bright: #CED4DA;
+    --success: #198754;
+    --warn: #FD7E14;
+    --block: #DC3545;
+    --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; font-size: 13px; }
   body::before {
@@ -126,7 +150,7 @@
   .alert-icon { flex-shrink: 0; }
 
   /* UPLOAD NOTICE */
-  .upload-notice { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; margin-bottom: 10px; background: rgba(6,182,212,0.07); border: 1px solid rgba(6,182,212,0.2); border-radius: 7px; font-size: 11px; color: #67e8f9; line-height: 1.5; }
+  .upload-notice { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; margin-bottom: 10px; background: rgba(6,182,212,0.07); border: 1px solid rgba(6,182,212,0.2); border-radius: 7px; font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
   .upload-notice .uni { flex-shrink: 0; margin-top: 1px; }
 
   /* FORMS */
@@ -305,6 +329,64 @@
   .sandan-row td:first-child { font-weight: 700; }
   .sandan-divider td { padding: 0 !important; }
   .sandan-divider-line { height: 2px; background: linear-gradient(90deg, rgba(99,102,241,0.5), rgba(99,102,241,0.1)); margin: 3px 0; border-radius: 1px; }
+
+  /* ===== 테마 선택 UI ===== */
+  .theme-selector {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .theme-selector-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .theme-options {
+    display: flex;
+    gap: 12px;
+  }
+  .theme-option {
+    flex: 1;
+    padding: 20px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    background: var(--bg-card);
+  }
+  .theme-option:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+  }
+  .theme-option.selected {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue);
+    color: white;
+  }
+  .theme-option-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+  .theme-option-name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .theme-option-desc {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  .theme-option.selected .theme-option-name,
+  .theme-option.selected .theme-option-desc {
+    color: white;
+  }
+
 </style>
 </head>
 <body>
@@ -719,6 +801,21 @@
       <div class="pv-item">💾 <span><em>저장소 미사용</em> — localStorage, sessionStorage, IndexedDB, Cache Storage 등 브라우저 영구 저장소에 원본 데이터를 저장하지 않습니다.</span></div>
       <div class="pv-item">🧹 <span><em>탭 종료 시 즉시 소멸</em> — 브라우저 탭을 닫거나 새로고침하면 모든 데이터가 메모리에서 자동 삭제됩니다.</span></div>
       <div class="pv-item">📵 <span><em>콘솔 마스킹</em> — 학번·이름·금액 등 개인정보가 브라우저 콘솔에 출력되지 않습니다.</span></div>
+    </div>
+    <div class="theme-selector">
+      <span class="theme-selector-label">🎨 화면 테마 선택</span>
+      <div class="theme-options">
+        <div class="theme-option" id="theme-dark" onclick="Theme.set('dark')">
+          <div class="theme-option-icon">🌙</div>
+          <div class="theme-option-name">다크 모드</div>
+          <div class="theme-option-desc">어두운 배경</div>
+        </div>
+        <div class="theme-option" id="theme-light" onclick="Theme.set('light')">
+          <div class="theme-option-icon">☀️</div>
+          <div class="theme-option-name">라이트 모드</div>
+          <div class="theme-option-desc">밝은 배경</div>
+        </div>
+      </div>
     </div>
     <div class="pv-agree" onclick="document.getElementById('pvCheck').click()">
       <input type="checkbox" id="pvCheck" onchange="onPrivacyCheck()">
@@ -3377,6 +3474,47 @@ window.addEventListener('DOMContentLoaded', init);
 
 
 
+
+
+// ===== 테마 관리 =====
+var Theme = {
+  current: 'dark',
+  
+  init: function() {
+    var saved = localStorage.getItem('appTheme');
+    if (saved) {
+      this.current = saved;
+      this.apply();
+    }
+  },
+  
+  apply: function() {
+    if (this.current === 'light') {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+    var darkBtn = document.getElementById('theme-dark');
+    var lightBtn = document.getElementById('theme-light');
+    if (darkBtn && lightBtn) {
+      if (this.current === 'dark') {
+        darkBtn.classList.add('selected');
+        lightBtn.classList.remove('selected');
+      } else {
+        lightBtn.classList.add('selected');
+        darkBtn.classList.remove('selected');
+      }
+    }
+  },
+  
+  set: function(theme) {
+    this.current = theme;
+    localStorage.setItem('appTheme', theme);
+    this.apply();
+  }
+};
+
+Theme.init();
 
 </script>
 
