@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025-2학기 학생인건비 확약서/임용신청서 생성 시스템</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 20px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: #48bb78;
+            color: white;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            margin: 0 5px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(237, 137, 54, 0.3);
+        }
+
+        .file-upload {
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+            margin-bottom: 20px;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .file-upload.dragover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .file-upload.completed {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-table th,
+        .preview-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .preview-table th {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .preview-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #e6fffa;
+            border-color: #38b2ac;
+            color: #234e52;
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            border-color: #48bb78;
+            color: #276749;
+        }
+
+        .alert-warning {
+            background: #fffaf0;
+            border-color: #ed8936;
+            color: #744210;
+        }
+
+        .download-section {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #f0fff4, #e6fffa);
+            border-radius: 15px;
+            border: 2px solid #48bb78;
+        }
+
+        .download-section.show {
+            display: block;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .month-range {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auto-calculated {
+            background: #f0fff4;
+            color: #276749;
+            font-weight: 600;
+            font-style: italic;
+        }
+
+        .students-list {
+            margin-top: 30px;
+        }
+
+        .student-item {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-info {
+            flex-grow: 1;
+        }
+
+        .student-actions button {
+            margin-left: 5px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .generate-section {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #edf2f7, #e2e8f0);
+            border-radius: 15px;
+            border: 2px solid #667eea;
+            margin-top: 30px;
+        }
+
+        .generate-section.show {
+            display: block;
+        }
+
+        .currency-format {
+            text-align: right;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-item h4 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .upload-status {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .upload-status.success {
+            color: #48bb78;
+        }
+
+        .upload-status.error {
+            color: #e53e3e;
+        }
+
+        .setup-section {
+            margin-bottom: 30px;
+        }
+
+        .system-settings {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .system-settings h4 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .update-notice {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .update-notice::before {
+            content: "⚠️";
+            font-size: 24px;
+            position: absolute;
+            top: 15px;
+            left: 20px;
+        }
+
+        .update-notice-content {
+            margin-left: 40px;
+        }
+
+        .update-notice h4 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .update-notice p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .update-notice .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 2025-2학기 학생인건비 확약서/임용신청서 생성 시스템</h1>
+        
+        <!-- 배포 정보 및 문의처 -->
+        <div style="text-align: center; margin-bottom: 20px; background: rgba(255,255,255,0.8); padding: 15px; border-radius: 10px;">
+            <p style="margin: 5px 0; color: #4a5568; font-weight: 600;">포스텍 화학과 행정팀 배포</p>
+            <p style="margin: 5px 0; color: #718096; font-size: 0.9rem;">문의사항 및 오류신고는 학과 행정팀으로 연락주세요</p>
+        </div>
+        
+        <!-- 업데이트 공지 -->
+        <div class="update-notice">
+            <div class="update-notice-content">
+                <h4>중요 업데이트 알림</h4>
+                <p><span class="highlight">수정사항:</span> 동일한 학생이 같은 WBS 번호로 여러 기간에 걸쳐 다른 금액을 지급받는 것이 허용됩니다.</p>
+                <p>기존의 <span class="highlight">"이미 등록된 학번과 WBS 조합입니다"</span> 제한이 제거되었습니다.</p>
+                <p>예시: '홍길동' 학생이 9월~11월 60만원, 12월~2월 160만원을 같은 WBS에서 지급받을 수 있습니다.</p>
+            </div>
+        </div>
+        
+        <!-- 단계 표시기 -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <span>초기 설정</span>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <span>학생 정보 입력</span>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <span>파일 생성</span>
+            </div>
+        </div>
+
+        <!-- Step 1: 초기 설정 -->
+        <div class="section" id="setup-section">
+            <div class="section-header">
+                <h2>⚙️ Step 1: 초기 설정</h2>
+                <span>기본 데이터 설정</span>
+            </div>
+            
+            <!-- 시스템 설정 -->
+            <div class="system-settings">
+                <h4>📅 학기 정보 설정</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="academic-year">학년도 *</label>
+                        <input type="text" id="academic-year" required value="2025" placeholder="예: 2025">
+                    </div>
+                    <div class="form-group">
+                        <label for="semester-code">학기코드 *</label>
+                        <input type="text" id="semester-code" required value="0092" placeholder="예: 0092 (2학기)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>💡 안내:</strong> 
+                WBS 데이터와 학생 정보 파일을 업로드해주세요. 각 파일의 필수 컬럼을 확인하세요.
+            </div>
+
+            <!-- 파일 업로드 영역 -->
+            <div class="upload-grid">
+                <!-- WBS 데이터 업로드 -->
+                <div class="upload-item">
+                    <h4>📋 WBS 데이터 파일</h4>
+                    <div class="alert alert-warning" style="font-size: 0.9rem; padding: 10px;">
+                        <strong>필수 컬럼:</strong> WBS요소, 계정책임자No(또는 계정책임자번호), 계정책임자
+                    </div>
+                    <div class="file-upload" id="wbs-upload">
+                        <div style="font-size: 36px; margin-bottom: 10px;">📁</div>
+                        <h4>WBS 데이터 업로드</h4>
+                        <p style="color: #718096; margin-top: 5px;">드래그하거나 클릭하여 업로드</p>
+                        <input type="file" id="wbs-file-input" accept=".xlsx,.xls" style="display: none;">
+                    </div>
+                    <div class="upload-status" id="wbs-status" style="display: none;">
+                        <span id="wbs-status-text"></span>
+                    </div>
+                </div>
+
+                <!-- 학생 데이터 업로드 -->
+                <div class="upload-item">
+                    <h4>👨‍🎓 학생 정보 파일</h4>
+                    <div class="alert alert-warning" style="font-size: 0.9rem; padding: 10px;">
+                        <strong>필수 컬럼:</strong> 학번, 이름, 과정, 학기, 학적상태, 지급기준, 기준금액(원)
+                    </div>
+                    <div class="file-upload" id="student-upload">
+                        <div style="font-size: 36px; margin-bottom: 10px;">👥</div>
+                        <h4>학생 데이터 업로드</h4>
+                        <p style="color: #718096; margin-top: 5px;">드래그하거나 클릭하여 업로드</p>
+                        <input type="file" id="student-file-input" accept=".xlsx,.xls" style="display: none;">
+                    </div>
+                    <div class="upload-status" id="student-status" style="display: none;">
+                        <span id="student-status-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 미리보기 영역 -->
+            <div id="wbs-preview" style="display: none;">
+                <h4 style="margin: 20px 0 10px 0;">📊 WBS 데이터 미리보기</h4>
+                <table class="preview-table" id="wbs-table">
+                    <thead>
+                        <tr>
+                            <th>WBS요소</th>
+                            <th>계정책임자No</th>
+                            <th>계정책임자</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div id="student-preview" style="display: none;">
+                <h4 style="margin: 20px 0 10px 0;">👥 학생 정보 미리보기</h4>
+                <table class="preview-table" id="student-table">
+                    <thead>
+                        <tr>
+                            <th>학번</th>
+                            <th>이름</th>
+                            <th>과정</th>
+                            <th>학기</th>
+                            <th>학적상태</th>
+                            <th>지급기준</th>
+                            <th>기준금액(월)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="goToStep2()" id="next-step1" disabled>
+                    다음 단계 →
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: 학생 정보 입력 -->
+        <div class="section" id="student-section" style="display: none;">
+            <div class="section-header">
+                <h2>👨‍🎓 Step 2: 학생 정보 입력</h2>
+                <span>학생별 조교수당 정보 등록</span>
+            </div>
+
+            <form id="student-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-id">학번 *</label>
+                        <select id="student-id" required>
+                            <option value="">학번을 선택하세요</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-name">이름</label>
+                        <input type="text" id="student-name" class="auto-calculated" readonly placeholder="자동 입력">
+                    </div>
+                    <div class="form-group">
+                        <label for="student-position">과정</label>
+                        <input type="text" id="student-position" class="auto-calculated" readonly placeholder="자동 입력">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="wbs-element">WBS요소 *</label>
+                        <select id="wbs-element" required>
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="account-no">계정책임자 직번</label>
+                        <input type="text" id="account-no" class="auto-calculated" readonly placeholder="자동 입력">
+                    </div>
+                    <div class="form-group">
+                        <label for="account-name">계정책임자 이름</label>
+                        <input type="text" id="account-name" class="auto-calculated" readonly placeholder="자동 입력">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="role">역할 *</label>
+                        <textarea id="role" required placeholder="해당 과제에서 실제로 수행하는 학생의 업무와 과제와의 연관성을 구체적으로 작성바랍니다"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-category">과제소분류 *</label>
+                        <select id="project-category" required>
+                            <option value="">선택하세요</option>
+                            <option value="학생인건비(개별계정)">학생인건비(개별계정)</option>
+                            <option value="학생인건비(학과계정)">학생인건비(학과계정)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="monthly-amount">월 지급금액 *</label>
+                        <input type="text" id="monthly-amount" required placeholder="예: 300,000" class="currency-format">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>확약 기간 *</label>
+                        <div class="month-range">
+                            <select id="start-month" required>
+                                <option value="">시작월</option>
+                                <option value="9">9월</option>
+                                <option value="10">10월</option>
+                                <option value="11">11월</option>
+                                <option value="12">12월</option>
+                                <option value="1">1월</option>
+                                <option value="2">2월</option>
+                            </select>
+                            <span>부터</span>
+                            <select id="end-month" required>
+                                <option value="">종료월</option>
+                                <option value="9">9월</option>
+                                <option value="10">10월</option>
+                                <option value="11">11월</option>
+                                <option value="12">12월</option>
+                                <option value="1">1월</option>
+                                <option value="2">2월</option>
+                            </select>
+                            <span>까지</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="start-date">확약시작일</label>
+                        <input type="text" id="start-date" class="auto-calculated" readonly placeholder="자동 계산">
+                    </div>
+                    <div class="form-group">
+                        <label for="end-date">확약종료일</label>
+                        <input type="text" id="end-date" class="auto-calculated" readonly placeholder="자동 계산">
+                    </div>
+                </div>
+            </form>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="goToStep1()">← 이전 단계</button>
+                <button class="btn btn-primary" onclick="addStudent()" id="add-student-btn">
+                    추가 입력
+                </button>
+                <button class="btn btn-warning" onclick="finishInput()" id="finish-input-btn">
+                    입력 종료
+                </button>
+            </div>
+
+            <!-- 등록된 학생 목록 -->
+            <div class="students-list" id="students-list" style="display: none;">
+                <h4 style="margin-bottom: 15px;">📋 등록된 학생 목록</h4>
+                <div id="students-container"></div>
+            </div>
+
+            <!-- 파일 생성 섹션 -->
+            <div class="generate-section" id="generate-section">
+                <h3 style="color: #4a5568; margin-bottom: 20px;">📊 파일 생성 준비 완료</h3>
+                <p style="margin-bottom: 20px;">총 <span id="student-count">0</span>명의 학생이 등록되었습니다.</p>
+                <button class="btn btn-success" onclick="generateFiles()" id="generate-files-btn">
+                    엑셀 파일 생성
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: 파일 생성 완료 -->
+        <div class="download-section" id="download-section">
+            <h2 style="color: #276749; margin-bottom: 20px;">✅ 파일 생성 완료!</h2>
+            <p style="font-size: 1.1rem; color: #2d3748; margin-bottom: 30px;">
+                아래 버튼을 클릭하여 생성된 엑셀 파일을 다운로드하세요.
+            </p>
+            
+            <div class="download-buttons">
+                <button class="btn btn-success" id="download-salary-btn">
+                    📋 학생인건비확약서.xlsx 다운로드
+                </button>
+                <button class="btn btn-success" id="download-appointment-btn">
+                    📄 대학원생조교임용신청서.xlsx 다운로드
+                </button>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <button class="btn btn-primary" onclick="resetAll()">
+                    🔄 새로 시작
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let wbsData = [];
+        let studentDatabase = {};
+        let systemSettings = {
+            academicYear: '2025',
+            semester: '0092'
+        };
+        let registeredStudents = [];
+
+        // 최저기준금액
+        const minimumSalary = {
+            '석사': 220000,
+            '박사': 300000,
+            '통합': 300000
+        };
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFileUploads();
+            setupEventListeners();
+            updateStepIndicator(1);
+        });
+
+        // 파일 업로드 설정
+        function setupFileUploads() {
+            // WBS 파일 업로드
+            setupFileUpload('wbs-upload', 'wbs-file-input', handleWBSFile);
+            // 학생 파일 업로드
+            setupFileUpload('student-upload', 'student-file-input', handleStudentFile);
+        }
+
+        function setupFileUpload(uploadId, inputId, handler) {
+            const uploadArea = document.getElementById(uploadId);
+            const fileInput = document.getElementById(inputId);
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handler);
+
+            // 드래그 앤 드롭
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handler({ target: { files: files } });
+                }
+            });
+        }
+
+        // WBS 파일 처리
+        function handleWBSFile(event) {
+            const file = event.target.files[0];
+            if (!file || !validateFile(file)) return;
+
+            showUploadStatus('wbs', 'loading', '파일 읽는 중...');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    processWBSData(jsonData);
+                } catch (error) {
+                    showUploadStatus('wbs', 'error', '파일 읽기 실패: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 학생 파일 처리
+        function handleStudentFile(event) {
+            const file = event.target.files[0];
+            if (!file || !validateFile(file)) return;
+
+            showUploadStatus('student', 'loading', '파일 읽는 중...');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    processStudentData(jsonData);
+                } catch (error) {
+                    showUploadStatus('student', 'error', '파일 읽기 실패: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 업로드 상태 표시
+        function showUploadStatus(type, status, message) {
+            const statusDiv = document.getElementById(`${type}-status`);
+            const statusText = document.getElementById(`${type}-status-text`);
+            const uploadDiv = document.getElementById(`${type}-upload`);
+            
+            statusDiv.style.display = 'flex';
+            statusText.textContent = message;
+            
+            statusDiv.className = 'upload-status';
+            if (status === 'success') {
+                statusDiv.classList.add('success');
+                uploadDiv.classList.add('completed');
+                statusText.textContent = '✅ ' + message;
+            } else if (status === 'error') {
+                statusDiv.classList.add('error');
+                statusText.textContent = '❌ ' + message;
+            } else {
+                statusText.textContent = '⏳ ' + message;
+            }
+        }
+
+        // 파일 검증
+        function validateFile(file) {
+            const validTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel'
+            ];
+            
+            if (!validTypes.includes(file.type)) {
+                alert('엑셀 파일만 업로드 가능합니다. (.xlsx, .xls)');
+                return false;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                alert('파일 크기가 너무 큽니다. 10MB 이하의 파일을 업로드해주세요.');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // WBS 데이터 처리
+        function processWBSData(jsonData) {
+            try {
+                // 헤더 행 찾기
+                let headerRowIndex = -1;
+                const requiredColumns = ['WBS', '계정책임자'];
+                
+                for (let i = 0; i < Math.min(5, jsonData.length); i++) {
+                    const row = jsonData[i];
+                    if (requiredColumns.every(col => 
+                        row.some(cell => cell && cell.toString().includes(col))
+                    )) {
+                        headerRowIndex = i;
+                        break;
+                    }
+                }
+                
+                if (headerRowIndex === -1) {
+                    showUploadStatus('wbs', 'error', 'WBS 데이터 헤더를 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const headers = jsonData[headerRowIndex];
+                const dataRows = jsonData.slice(headerRowIndex + 1);
+                
+                // 컬럼 인덱스 찾기
+                const wbsColIndex = headers.findIndex(h => h && h.toString().includes('WBS'));
+                const accountNoColIndex = headers.findIndex(h => 
+                    h && h.toString().includes('계정책임자') && 
+                    (h.toString().includes('No') || h.toString().includes('번호'))
+                );
+                const accountNameColIndex = headers.findIndex(h => 
+                    h && h.toString().includes('계정책임자') && 
+                    !h.toString().includes('No') && !h.toString().includes('번호')
+                );
+                
+                if (wbsColIndex === -1 || accountNameColIndex === -1) {
+                    showUploadStatus('wbs', 'error', '필수 컬럼이 없습니다. (WBS요소, 계정책임자)');
+                    return;
+                }
+                
+                wbsData = dataRows
+                    .filter(row => row[wbsColIndex])
+                    .map(row => ({
+                        element: row[wbsColIndex] ? row[wbsColIndex].toString() : '',
+                        accountNo: row[accountNoColIndex] ? row[accountNoColIndex].toString() : '',
+                        accountName: row[accountNameColIndex] ? row[accountNameColIndex].toString() : ''
+                    }));
+                
+                if (wbsData.length === 0) {
+                    showUploadStatus('wbs', 'error', '유효한 WBS 데이터를 찾을 수 없습니다.');
+                    return;
+                }
+                
+                displayWBSPreview();
+                updateWBSDropdown();
+                showUploadStatus('wbs', 'success', `${wbsData.length}개 WBS 데이터 로드 완료`);
+                checkAllDataLoaded();
+                
+            } catch (error) {
+                showUploadStatus('wbs', 'error', 'WBS 데이터 처리 실패');
+                console.error('WBS 데이터 처리 오류:', error);
+            }
+        }
+
+        // 학생 데이터 처리
+        function processStudentData(jsonData) {
+            try {
+                // 헤더 행 찾기
+                let headerRowIndex = -1;
+                const requiredColumns = ['학번', '이름', '과정'];
+                
+                for (let i = 0; i < Math.min(5, jsonData.length); i++) {
+                    const row = jsonData[i];
+                    if (requiredColumns.every(col => 
+                        row.some(cell => cell && cell.toString().includes(col))
+                    )) {
+                        headerRowIndex = i;
+                        break;
+                    }
+                }
+                
+                if (headerRowIndex === -1) {
+                    showUploadStatus('student', 'error', '학생 데이터 헤더를 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const headers = jsonData[headerRowIndex];
+                const dataRows = jsonData.slice(headerRowIndex + 1);
+                
+                // 컬럼 인덱스 찾기
+                const studentIdIndex = headers.findIndex(h => h && h.toString().includes('학번'));
+                const nameIndex = headers.findIndex(h => h && h.toString().includes('이름'));
+                const positionIndex = headers.findIndex(h => h && h.toString().includes('과정'));
+                const semesterIndex = headers.findIndex(h => h && h.toString().includes('학기'));
+                const statusIndex = headers.findIndex(h => h && h.toString().includes('학적상태'));
+                const payBasisIndex = headers.findIndex(h => h && h.toString().includes('지급기준'));
+                const monthlyBaseIndex = headers.findIndex(h => h && h.toString().includes('기준금액'));
+                
+                if (studentIdIndex === -1 || nameIndex === -1 || positionIndex === -1) {
+                    showUploadStatus('student', 'error', '필수 컬럼이 없습니다. (학번, 이름, 과정)');
+                    return;
+                }
+                
+                studentDatabase = {};
+                dataRows
+                    .filter(row => row[studentIdIndex])
+                    .forEach(row => {
+                        const studentId = row[studentIdIndex] ? row[studentIdIndex].toString() : '';
+                        if (studentId) {
+                            studentDatabase[studentId] = {
+                                name: row[nameIndex] ? row[nameIndex].toString() : '',
+                                position: row[positionIndex] ? row[positionIndex].toString() : '',
+                                semester: row[semesterIndex] ? row[semesterIndex].toString() : systemSettings.semester,
+                                status: row[statusIndex] ? row[statusIndex].toString() : '재학',
+                                payBasis: row[payBasisIndex] ? row[payBasisIndex].toString() : '학생인건비',
+                                monthlyBase: row[monthlyBaseIndex] ? row[monthlyBaseIndex].toString() : ''
+                            };
+                        }
+                    });
+                
+                if (Object.keys(studentDatabase).length === 0) {
+                    showUploadStatus('student', 'error', '유효한 학생 데이터를 찾을 수 없습니다.');
+                    return;
+                }
+                
+                displayStudentPreview();
+                updateStudentDropdown();
+                showUploadStatus('student', 'success', `${Object.keys(studentDatabase).length}명 학생 데이터 로드 완료`);
+                checkAllDataLoaded();
+                
+            } catch (error) {
+                showUploadStatus('student', 'error', '학생 데이터 처리 실패');
+                console.error('학생 데이터 처리 오류:', error);
+            }
+        }
+
+        // 모든 데이터 로드 확인
+        function checkAllDataLoaded() {
+            const academicYear = document.getElementById('academic-year').value;
+            const semesterCode = document.getElementById('semester-code').value;
+            
+            if (wbsData.length > 0 && Object.keys(studentDatabase).length > 0 && academicYear && semesterCode) {
+                systemSettings.academicYear = academicYear;
+                systemSettings.semester = semesterCode;
+                document.getElementById('next-step1').disabled = false;
+            }
+        }
+
+        // WBS 미리보기 표시
+        function displayWBSPreview() {
+            const tbody = document.querySelector('#wbs-table tbody');
+            tbody.innerHTML = '';
+            
+            wbsData.slice(0, 10).forEach(item => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = item.element;
+                row.insertCell(1).textContent = item.accountNo;
+                row.insertCell(2).textContent = item.accountName;
+            });
+
+            if (wbsData.length > 10) {
+                const row = tbody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 3;
+                cell.textContent = `... 외 ${wbsData.length - 10}개 항목`;
+                cell.style.textAlign = 'center';
+                cell.style.color = '#718096';
+                cell.style.fontStyle = 'italic';
+            }
+
+            document.getElementById('wbs-preview').style.display = 'block';
+        }
+
+        // 학생 미리보기 표시
+        function displayStudentPreview() {
+            const tbody = document.querySelector('#student-table tbody');
+            tbody.innerHTML = '';
+            
+            const students = Object.entries(studentDatabase).slice(0, 10);
+            students.forEach(([studentId, info]) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = studentId;
+                row.insertCell(1).textContent = info.name;
+                row.insertCell(2).textContent = info.position;
+                row.insertCell(3).textContent = info.semester;
+                row.insertCell(4).textContent = info.status;
+                row.insertCell(5).textContent = info.payBasis;
+                row.insertCell(6).textContent = info.monthlyBase;
+            });
+
+            if (Object.keys(studentDatabase).length > 10) {
+                const row = tbody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 7;
+                cell.textContent = `... 외 ${Object.keys(studentDatabase).length - 10}명`;
+                cell.style.textAlign = 'center';
+                cell.style.color = '#718096';
+                cell.style.fontStyle = 'italic';
+            }
+
+            document.getElementById('student-preview').style.display = 'block';
+        }
+
+        // 드롭다운 업데이트
+        function updateWBSDropdown() {
+            const select = document.getElementById('wbs-element');
+            select.innerHTML = '<option value="">선택하세요</option>';
+            
+            wbsData.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.element;
+                option.textContent = `${item.element} (${item.accountName})`;
+                select.appendChild(option);
+            });
+        }
+
+        function updateStudentDropdown() {
+            const select = document.getElementById('student-id');
+            select.innerHTML = '<option value="">학번을 선택하세요</option>';
+            
+            Object.keys(studentDatabase).forEach(studentId => {
+                const option = document.createElement('option');
+                option.value = studentId;
+                option.textContent = `${studentId} (${studentDatabase[studentId].name})`;
+                select.appendChild(option);
+            });
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 시스템 설정 변경 감지
+            document.getElementById('academic-year').addEventListener('change', checkAllDataLoaded);
+            document.getElementById('semester-code').addEventListener('change', checkAllDataLoaded);
+
+            // 학번 선택시 학생 정보 자동 입력
+            document.getElementById('student-id').addEventListener('change', function() {
+                const studentId = this.value;
+                const studentInfo = studentDatabase[studentId];
+                
+                if (studentInfo) {
+                    document.getElementById('student-name').value = studentInfo.name;
+                    document.getElementById('student-position').value = studentInfo.position;
+                } else {
+                    document.getElementById('student-name').value = '';
+                    document.getElementById('student-position').value = '';
+                }
+            });
+
+            // WBS 선택시 계정 정보 자동 입력
+            document.getElementById('wbs-element').addEventListener('change', function() {
+                const selectedWBS = this.value;
+                const wbsItem = wbsData.find(item => item.element === selectedWBS);
+                
+                if (wbsItem) {
+                    document.getElementById('account-no').value = wbsItem.accountNo;
+                    document.getElementById('account-name').value = wbsItem.accountName;
+                }
+            });
+
+            // 확약 기간 선택시 날짜 자동 계산
+            document.getElementById('start-month').addEventListener('change', updateDates);
+            document.getElementById('end-month').addEventListener('change', updateDates);
+
+            // 금액 입력시 형식 적용
+            document.getElementById('monthly-amount').addEventListener('input', formatCurrency);
+            document.getElementById('monthly-amount').addEventListener('blur', validateMinimumSalary);
+        }
+
+        // 통화 형식 적용
+        function formatCurrency(event) {
+            let value = event.target.value.replace(/[^0-9]/g, '');
+            if (value) {
+                value = parseInt(value).toLocaleString();
+                event.target.value = value;
+            }
+        }
+
+        // 최저기준금액 검증
+        function validateMinimumSalary() {
+            const position = document.getElementById('student-position').value;
+            const amountStr = document.getElementById('monthly-amount').value;
+            const amount = parseInt(amountStr.replace(/[^0-9]/g, ''));
+            
+            if (position && amount && minimumSalary[position]) {
+                if (amount < minimumSalary[position]) {
+                    alert(`⚠ 학생인건비 최저기준금액 미달: 해당 월 추가 지급계획을 반드시 입력해 주세요\n(${position} 과정 최저기준: ${minimumSalary[position].toLocaleString()}원)`);
+                }
+            }
+        }
+
+        // 날짜 업데이트
+        function updateDates() {
+            const startMonth = parseInt(document.getElementById('start-month').value);
+            const endMonth = parseInt(document.getElementById('end-month').value);
+            
+            if (startMonth && endMonth) {
+                const year = startMonth <= 2 ? 2026 : 2025;
+                const endYear = endMonth <= 2 ? 2026 : 2025;
+                
+                const startDate = `${year}${startMonth.toString().padStart(2, '0')}01`;
+                document.getElementById('start-date').value = startDate;
+                
+                const endDate = new Date(endYear, endMonth, 0).getDate();
+                const endDateStr = `${endYear}${endMonth.toString().padStart(2, '0')}${endDate}`;
+                document.getElementById('end-date').value = endDateStr;
+            }
+        }
+
+        // 단계 이동 함수들
+        function goToStep1() {
+            document.getElementById('setup-section').style.display = 'block';
+            document.getElementById('student-section').style.display = 'none';
+            updateStepIndicator(1);
+        }
+
+        function goToStep2() {
+            document.getElementById('setup-section').style.display = 'none';
+            document.getElementById('student-section').style.display = 'block';
+            updateStepIndicator(2);
+        }
+
+        function goToStep3() {
+            document.getElementById('student-section').style.display = 'none';
+            document.getElementById('download-section').classList.add('show');
+            updateStepIndicator(3);
+        }
+
+        // 단계 표시기 업데이트
+        function updateStepIndicator(currentStep) {
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                } else if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                }
+            });
+        }
+
+        // 학생 추가 (중복 체크 로직 제거됨)
+        function addStudent() {
+            if (!validateForm()) return;
+
+            const studentData = collectFormData();
+            
+            // 기존의 중복 체크 로직을 제거했습니다.
+            // 이제 동일한 학생이 같은 WBS로 여러 번 등록 가능합니다.
+
+            registeredStudents.push(studentData);
+            updateStudentsList();
+            resetStudentForm();
+            
+            // 성공 메시지
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.innerHTML = `<strong>✅ 추가 완료!</strong> ${studentData.studentName}님이 등록되었습니다.`;
+            
+            const form = document.getElementById('student-form');
+            form.parentNode.insertBefore(successMsg, form.nextSibling);
+            
+            setTimeout(() => {
+                successMsg.remove();
+            }, 3000);
+        }
+
+        // 폼 검증
+        function validateForm() {
+            const form = document.getElementById('student-form');
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            for (let field of requiredFields) {
+                if (!field.value.trim()) {
+                    field.focus();
+                    alert(`${field.previousElementSibling.textContent}을(를) 입력해주세요.`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // 폼 데이터 수집
+        function collectFormData() {
+            const studentId = document.getElementById('student-id').value;
+            const studentInfo = studentDatabase[studentId];
+            const amountStr = document.getElementById('monthly-amount').value;
+            const amount = parseInt(amountStr.replace(/[^0-9]/g, ''));
+            
+            return {
+                studentId: studentId,
+                studentName: document.getElementById('student-name').value,
+                position: document.getElementById('student-position').value,
+                wbsElement: document.getElementById('wbs-element').value,
+                accountNo: document.getElementById('account-no').value,
+                accountName: document.getElementById('account-name').value,
+                role: document.getElementById('role').value,
+                projectCategory: document.getElementById('project-category').value,
+                monthlyAmount: amount,
+                monthlyAmountFormatted: amountStr,
+                startMonth: parseInt(document.getElementById('start-month').value),
+                endMonth: parseInt(document.getElementById('end-month').value),
+                startDate: document.getElementById('start-date').value,
+                endDate: document.getElementById('end-date').value,
+                semester: studentInfo.semester,
+                status: studentInfo.status,
+                payBasis: studentInfo.payBasis,
+                monthlyBase: studentInfo.monthlyBase
+            };
+        }
+
+        // 등록된 학생 목록 업데이트
+        function updateStudentsList() {
+            const container = document.getElementById('students-container');
+            const listSection = document.getElementById('students-list');
+            
+            container.innerHTML = '';
+            
+            registeredStudents.forEach((student, index) => {
+                const studentDiv = document.createElement('div');
+                studentDiv.className = 'student-item';
+                studentDiv.innerHTML = `
+                    <div class="student-info">
+                        <strong>${student.studentName} (${student.studentId})</strong> - 
+                        ${student.position} - ${student.wbsElement} - ${student.monthlyAmountFormatted}원
+                        <br><small style="color: #666;">${student.startMonth}월~${student.endMonth}월, ${student.role.substring(0, 30)}...</small>
+                    </div>
+                    <div class="student-actions">
+                        <button class="btn btn-secondary" onclick="editStudent(${index})" style="font-size: 0.8rem; padding: 6px 12px;">수정</button>
+                        <button class="btn btn-secondary" onclick="removeStudent(${index})" style="font-size: 0.8rem; padding: 6px 12px; background: #fed7d7; border-color: #fc8181; color: #c53030;">삭제</button>
+                    </div>
+                `;
+                container.appendChild(studentDiv);
+            });
+            
+            if (registeredStudents.length > 0) {
+                listSection.style.display = 'block';
+            } else {
+                listSection.style.display = 'none';
+            }
+        }
+
+        // 학생 정보 수정
+        function editStudent(index) {
+            const student = registeredStudents[index];
+            
+            // 폼에 데이터 채우기
+            document.getElementById('student-id').value = student.studentId;
+            document.getElementById('student-name').value = student.studentName;
+            document.getElementById('student-position').value = student.position;
+            document.getElementById('wbs-element').value = student.wbsElement;
+            document.getElementById('account-no').value = student.accountNo;
+            document.getElementById('account-name').value = student.accountName;
+            document.getElementById('role').value = student.role;
+            document.getElementById('project-category').value = student.projectCategory;
+            document.getElementById('monthly-amount').value = student.monthlyAmountFormatted;
+            document.getElementById('start-month').value = student.startMonth;
+            document.getElementById('end-month').value = student.endMonth;
+            document.getElementById('start-date').value = student.startDate;
+            document.getElementById('end-date').value = student.endDate;
+            
+            // 해당 학생 삭제 (수정을 위해)
+            registeredStudents.splice(index, 1);
+            updateStudentsList();
+        }
+
+        // 학생 삭제
+        function removeStudent(index) {
+            if (confirm('정말로 삭제하시겠습니까?')) {
+                registeredStudents.splice(index, 1);
+                updateStudentsList();
+                updateStudentCount();
+            }
+        }
+
+        // 입력 종료
+        function finishInput() {
+            if (registeredStudents.length === 0) {
+                alert('등록된 학생이 없습니다. 최소 1명 이상의 학생을 등록해주세요.');
+                return;
+            }
+            
+            document.getElementById('generate-section').classList.add('show');
+            updateStudentCount();
+            
+            // 폼 비활성화
+            const form = document.getElementById('student-form');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => input.disabled = true);
+            
+            document.getElementById('add-student-btn').disabled = true;
+            document.getElementById('finish-input-btn').disabled = true;
+        }
+
+        // 학생 수 업데이트
+        function updateStudentCount() {
+            document.getElementById('student-count').textContent = registeredStudents.length;
+        }
+
+        // 파일 생성
+        function generateFiles() {
+            if (registeredStudents.length === 0) {
+                alert('등록된 학생이 없습니다.');
+                return;
+            }
+
+            setupDownloadButtons();
+            goToStep3();
+        }
+
+        // 다운로드 버튼 설정
+        function setupDownloadButtons() {
+            document.getElementById('download-salary-btn').onclick = () => generateSalaryFile();
+            document.getElementById('download-appointment-btn').onclick = () => generateAppointmentFile();
+        }
+
+        // 학생인건비확약서 생성
+        function generateSalaryFile() {
+            const data = [
+                ['학년도', '학기', '학번', '이름', 'WBS', '계정책임자 직번', '계정자 이름', '확약서 유형', '확약시작일', '확약종료일', '연구활동유형', '학위논문 지원 개월수', '역할', '임금유형1', '지급금액1', '임금유형2', '지급금액2', '임금유형3', '지급금액3', '임금유형4', '지급금액4', '임금유형5', '지급금액5', '임금유형6', '지급금액6', '임금유형7', '지급금액7', '임금유형8', '지급금액8']
+            ];
+
+            registeredStudents.forEach(student => {
+                const salaryType = student.position === '석사' ? '8031' : '8030';
+                data.push([
+                    systemSettings.academicYear,
+                    systemSettings.semester,
+                    student.studentId,
+                    student.studentName,
+                    student.wbsElement,
+                    student.accountNo,
+                    student.accountName,
+                    '1',
+                    student.startDate,
+                    student.endDate,
+                    '1',
+                    '',
+                    student.role,
+                    salaryType,
+                    student.monthlyAmount,
+                    '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // 금액 컬럼에 숫자 형식 적용
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let R = 1; R <= range.e.r; R++) {
+                const amountCell = XLSX.utils.encode_cell({ r: R, c: 14 });
+                if (ws[amountCell]) {
+                    ws[amountCell].t = 'n';
+                    ws[amountCell].z = '#,##0';
+                }
+            }
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '학생인건비확약서');
+            
+            XLSX.writeFile(wb, '학생인건비확약서.xlsx');
+        }
+
+        // 대학원생조교임용신청서 생성
+        function generateAppointmentFile() {
+            const data = [
+                ['No.', '학번(ID)', '이름(Name)', '과정(Position)', '학기(Semester)', '학적상태', '지급기준', '기준금액(월)', '임용사항', '과제교내외구분', '과제대분류', '과제소분류', '풀링여부', '세부과제번호', '계정', '연구책임자명', 'WBS no.', '9월', '10월', '11월', '12월', '1월', '2월', '계']
+            ];
+
+            registeredStudents.forEach((student, index) => {
+                const monthlyAmounts = calculateMonthlyAmounts(student);
+                
+                data.push([
+                    index + 1,
+                    student.studentId,
+                    student.studentName,
+                    student.position,
+                    student.semester,
+                    student.status,
+                    student.payBasis,
+                    parseInt(student.monthlyBase.replace(/[^0-9]/g, '')) || student.monthlyBase,
+                    '임용',
+                    '교내',
+                    '학생인건비_통합과제',
+                    student.projectCategory,
+                    '○',
+                    student.wbsElement.substring(0, 12),
+                    '학생인건비',
+                    student.accountName,
+                    student.wbsElement,
+                    monthlyAmounts.sept || '',
+                    monthlyAmounts.oct || '',
+                    monthlyAmounts.nov || '',
+                    monthlyAmounts.dec || '',
+                    monthlyAmounts.jan || '',
+                    monthlyAmounts.feb || '',
+                    monthlyAmounts.total || ''
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // 금액 컬럼들에 숫자 형식 적용
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let R = 1; R <= range.e.r; R++) {
+                // 기준금액(월) 컬럼 (H열 - 인덱스 7)
+                const baseAmountCell = XLSX.utils.encode_cell({ r: R, c: 7 });
+                if (ws[baseAmountCell] && ws[baseAmountCell].v !== '' && typeof ws[baseAmountCell].v === 'number') {
+                    ws[baseAmountCell].t = 'n';
+                    ws[baseAmountCell].z = '#,##0';
+                }
+                
+                // 9월~2월 및 계 컬럼들 (R~X열 - 인덱스 17~23)
+                for (let C = 17; C <= 23; C++) {
+                    const cell = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (ws[cell] && ws[cell].v !== '') {
+                        ws[cell].t = 'n';
+                        ws[cell].z = '#,##0';
+                    }
+                }
+            }
+
+            const colWidths = [
+                {wch: 5}, {wch: 12}, {wch: 12}, {wch: 10}, {wch: 12}, {wch: 10},
+                {wch: 12}, {wch: 12}, {wch: 10}, {wch: 10}, {wch: 15}, {wch: 20},
+                {wch: 8}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 20},
+                {wch: 10}, {wch: 10}, {wch: 10}, {wch: 10}, {wch: 10}, {wch: 10}, {wch: 12}
+            ];
+            ws['!cols'] = colWidths;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '대학원생조교임용신청서');
+            
+            XLSX.writeFile(wb, '대학원생조교임용신청서.xlsx');
+        }
+
+        // 월별 금액 계산
+        function calculateMonthlyAmounts(student) {
+            const startMonth = student.startMonth;
+            const endMonth = student.endMonth;
+            const monthlyAmount = student.monthlyAmount;
+            
+            const amounts = {
+                sept: '', oct: '', nov: '', dec: '', jan: '', feb: '', total: 0
+            };
+
+            // 확약 기간 계산
+            let currentMonth = startMonth;
+            while (true) {
+                const actualMonth = currentMonth > 12 ? currentMonth - 12 : currentMonth;
+                
+                switch (actualMonth) {
+                    case 9:
+                        amounts.sept = monthlyAmount;
+                        amounts.total += monthlyAmount;
+                        break;
+                    case 10:
+                        amounts.oct = monthlyAmount;
+                        amounts.total += monthlyAmount;
+                        break;
+                    case 11:
+                        amounts.nov = monthlyAmount;
+                        amounts.total += monthlyAmount;
+                        break;
+                    case 12:
+                        amounts.dec = monthlyAmount;
+                        amounts.total += monthlyAmount;
+                        break;
+                    case 1:
+                        amounts.jan = monthlyAmount;
+                        amounts.total += monthlyAmount;
+                        break;
+                    case 2:
+                        amounts.feb = monthlyAmount;
+                        amounts.total += monthlyAmount;
+                        break;
+                }
+
+                if (actualMonth === endMonth) break;
+                currentMonth++;
+                if (currentMonth > 24) break; // 무한루프 방지
+            }
+
+            return amounts;
+        }
+
+        // 학생 폼 리셋
+        function resetStudentForm() {
+            document.getElementById('student-form').reset();
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-position').value = '';
+            document.getElementById('account-no').value = '';
+            document.getElementById('account-name').value = '';
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+        }
+
+        // 전체 리셋
+        function resetAll() {
+            // 데이터 초기화
+            wbsData = [];
+            studentDatabase = {};
+            registeredStudents = [];
+            
+            // 시스템 설정 초기화
+            document.getElementById('academic-year').value = '2025';
+            document.getElementById('semester-code').value = '0092';
+            
+            // 파일 입력 초기화
+            document.getElementById('wbs-file-input').value = '';
+            document.getElementById('student-file-input').value = '';
+            
+            // 업로드 영역 초기화
+            document.getElementById('wbs-upload').classList.remove('completed');
+            document.getElementById('student-upload').classList.remove('completed');
+            
+            // 상태 메시지 숨기기
+            document.getElementById('wbs-status').style.display = 'none';
+            document.getElementById('student-status').style.display = 'none';
+            
+            // 미리보기 숨기기
+            document.getElementById('wbs-preview').style.display = 'none';
+            document.getElementById('student-preview').style.display = 'none';
+            
+            // 폼 리셋
+            resetStudentForm();
+            updateStudentsList();
+            
+            // 섹션 표시/숨기기
+            document.getElementById('setup-section').style.display = 'block';
+            document.getElementById('student-section').style.display = 'none';
+            document.getElementById('generate-section').classList.remove('show');
+            document.getElementById('download-section').classList.remove('show');
+            
+            // 버튼 상태 초기화
+            document.getElementById('next-step1').disabled = true;
+            
+            // 폼 활성화
+            const form = document.getElementById('student-form');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => input.disabled = false);
+            
+            document.getElementById('add-student-btn').disabled = false;
+            document.getElementById('finish-input-btn').disabled = false;
+            
+            updateStepIndicator(1);
+        }
+
+        // 에러 처리
+        window.addEventListener('error', function(e) {
+            console.error('오류 발생:', e.error);
+            alert('처리 중 오류가 발생했습니다. 페이지를 새로고침하고 다시 시도해주세요.');
+        });
+
+        // 브라우저 호환성 체크
+        if (!window.XLSX) {
+            alert('엑셀 라이브러리 로딩에 실패했습니다. 인터넷 연결을 확인하고 페이지를 새로고침해주세요.');
+        }
+
+    </script>
+</body>
+</html>
