@@ -1384,6 +1384,66 @@ function runValidation() {
       warns.push({ student: '-', id: '-', msg: SOURCE_LABELS[src] + ' 예산 초과 (집행 ' + fmt(budSpent[src]) + ' / 예산 ' + fmt(budAmt) + ')' });
   });
 
+  // ── 학생인건비 규정 검증 ─────────────────────────────────────
+  State.students.forEach(function(st) {
+    months.forEach(function(mo) {
+      var indAmt = getPayment(semId, st.id, 'ind', mo.month);
+      var orgAmt = getPayment(semId, st.id, 'org', mo.month);
+      var combinedAmt = indAmt + orgAmt;
+      
+      // 규정 1: 학생인건비 전체(개별+기관) 합계 최소금액
+      if (combinedAmt > 0) {
+        var minTotal = 0;
+        if (st.course === 'MA') minTotal = 220000;
+        else if (st.course === 'DR' || st.course === 'MP') minTotal = 300000;
+        
+        if (minTotal > 0 && combinedAmt < minTotal) {
+          blocks.push({
+            student: st.name, id: st.id,
+            msg: '[규정위반] 학생인건비 ' + mo.month + '월 합계 최소금액 미달 — ' +
+              (st.course === 'MA' ? '석사 월 22만원' : '박사/통합 월 30만원') +
+              ' 이상 필요 (현재: 개별 ' + fmt(indAmt) + ' + 기관 ' + fmt(orgAmt) + ' = ' + fmt(combinedAmt) + ')'
+          });
+        }
+      }
+      
+      // 규정 2: 학생인건비(기관) 별도 최소금액
+      if (orgAmt > 0) {
+        var orgMin = 0;
+        if (st.course === 'MA') orgMin = 440000;
+        else if (st.course === 'DR' || st.course === 'MP') orgMin = 600000;
+        
+        if (orgMin > 0 && orgAmt < orgMin) {
+          blocks.push({
+            student: st.name, id: st.id,
+            msg: '[규정위반] 학생인건비(기관) ' + mo.month + '월 최소금액 미달 — ' +
+              (st.course === 'MA' ? '석사 월 44만원' : '박사/통합 월 60만원') +
+              ' 이상 필요 (현재: ' + fmt(orgAmt) + ')'
+          });
+        }
+      }
+    });
+    
+    // 규정 3: 학생인건비(기관) 균등 지급 (2개월 이상 시)
+    var orgAmounts = [];
+    months.forEach(function(mo) {
+      var amt = getPayment(semId, st.id, 'org', mo.month);
+      if (amt > 0) orgAmounts.push({ month: mo.month, amount: amt });
+    });
+    
+    if (orgAmounts.length >= 2) {
+      var firstAmt = orgAmounts[0].amount;
+      var allSame = orgAmounts.every(function(item) { return item.amount === firstAmt; });
+      if (!allSame) {
+        blocks.push({
+          student: st.name, id: st.id,
+          msg: '[규정위반] 학생인건비(기관) 균등 지급 위반 — 모든 월 동일 금액 필요 (현재: ' +
+            orgAmounts.map(function(item) { return item.month + '월 ' + fmt(item.amount); }).join(', ') + ')'
+        });
+      }
+    }
+  });
+
   State.validationResult = { blocks: blocks, warns: warns };
   renderValidation();
   updateDashboard();
@@ -1839,7 +1899,9 @@ function validatePledge(rows) {
         inRange = mo.month >= startMo || mo.month <= endMo;
       }
       if (inRange) {
-        setPaymentRaw(sem.id, sid, srcKey, mo.month, amount);
+        // 기존 값에 더하기 (여러 WBS에서 지급 시 합산)
+        var currentAmt = getPayment(sem.id, sid, srcKey, mo.month);
+        setPaymentRaw(sem.id, sid, srcKey, mo.month, currentAmt + amount);
         // Topup 재계산
         var st = State.students.find(function(s) { return s.id === sid; });
         if (st) {
@@ -1854,6 +1916,105 @@ function validatePledge(rows) {
       type: srcKey, studentId: sid, semId: sem.id,
       wbs: wbs, startMo: startMo, endMo: endMo, amount: amount
     });
+  }
+
+  // ── 규정 1: 학생인건비 전체(개별+기관) 월별 합계 최소금액 검증 ──────
+  var paymentErrors = [];
+  State.students.forEach(function(st) {
+    var sem = State.semesters.find(function(s) { return s.id === State.currentSemId; });
+    if (!sem) return;
+    var months = getSemMonths(sem.year, sem.sem);
+    
+    months.forEach(function(mo) {
+      var indTotal = getPayment(sem.id, st.id, 'ind', mo.month);
+      var orgTotal = getPayment(sem.id, st.id, 'org', mo.month);
+      var combinedTotal = indTotal + orgTotal;
+      
+      // 개별+기관 합계 최소금액 (둘 중 하나라도 있으면 검증)
+      if (combinedTotal > 0) {
+        var minTotal = 0;
+        if (st.course === 'MA') minTotal = 220000;
+        else if (st.course === 'DR' || st.course === 'MP') minTotal = 300000;
+        
+        if (minTotal > 0 && combinedTotal < minTotal) {
+          paymentErrors.push(st.name + ' (학번: ' + st.id + '): ⛔ 학생인건비 ' + mo.month + '월 합계 최소금액 미달 — ' +
+            (st.course === 'MA' ? '석사 월 22만원' : '박사/통합 월 30만원') +
+            ' 이상 필요 (현재: 개별 ' + indTotal.toLocaleString() + '원 + 기관 ' + orgTotal.toLocaleString() + 
+            '원 = ' + combinedTotal.toLocaleString() + '원)');
+        }
+      }
+      
+      // 규정 2: 기관계정 별도 최소금액 (기관계정이 있으면 검증)
+      if (orgTotal > 0) {
+        var orgMin = 0;
+        if (st.course === 'MA') orgMin = 440000;
+        else if (st.course === 'DR' || st.course === 'MP') orgMin = 600000;
+        
+        if (orgMin > 0 && orgTotal < orgMin) {
+          paymentErrors.push(st.name + ' (학번: ' + st.id + '): ⛔ 학생인건비(기관) ' + mo.month + '월 최소금액 미달 — ' +
+            (st.course === 'MA' ? '석사 월 44만원' : '박사/통합 월 60만원') +
+            ' 이상 필요 (현재: ' + orgTotal.toLocaleString() + '원)');
+        }
+      }
+    });
+  });
+  
+  if (paymentErrors.length > 0) {
+    errors = errors.concat(paymentErrors);
+  }
+
+  // ── 규정 3: 기관계정 균등 지급 검증 (2개월 이상 지급 시) ──────
+  var orgUniformErrors = [];
+  State.students.forEach(function(st) {
+    var sem = State.semesters.find(function(s) { return s.id === State.currentSemId; });
+    if (!sem) return;
+    var months = getSemMonths(sem.year, sem.sem);
+    var orgAmounts = [];
+    months.forEach(function(mo) {
+      var amt = getPayment(sem.id, st.id, 'org', mo.month);
+      if (amt > 0) orgAmounts.push(amt);
+    });
+    
+    // 2개월 이상 지급 시 균등 지급 확인
+    if (orgAmounts.length >= 2) {
+      var firstAmt = orgAmounts[0];
+      var allSame = orgAmounts.every(function(amt) { return amt === firstAmt; });
+      if (!allSame) {
+        orgUniformErrors.push(st.name + ' (학번: ' + st.id + '): ⛔ 학생인건비(기관) 균등 지급 위반 — 모든 월 동일 금액 필요 (현재: ' + 
+          orgAmounts.map(function(a) { return a.toLocaleString() + '원'; }).join(', ') + ')');
+      }
+    }
+  });
+  
+  if (orgUniformErrors.length > 0) {
+    errors = errors.concat(orgUniformErrors);
+  }
+
+  // ⚠️ 규정 위반 시 전체 업로드 취소 ⚠️
+  if (paymentErrors.length > 0 || orgUniformErrors.length > 0) {
+    // 이미 적용된 payments 데이터 롤백
+    State.students.forEach(function(st) {
+      var sem = State.semesters.find(function(s) { return s.id === State.currentSemId; });
+      if (!sem) return;
+      var months = getSemMonths(sem.year, sem.sem);
+      months.forEach(function(mo) {
+        setPaymentRaw(sem.id, st.id, 'ind', mo.month, 0);
+        setPaymentRaw(sem.id, st.id, 'org', mo.month, 0);
+        setPaymentRaw(sem.id, st.id, 'topup', mo.month, 0);
+      });
+    });
+    
+    // pledges 데이터도 롤백
+    State.pledges = [];
+    
+    // 적용 건수 초기화
+    applied = 0;
+    indCount = 0;
+    orgCount = 0;
+    
+    renderPledgeResult(errors, warns, 0, 0, 0, 0);
+    toast('⛔ 확약서 규정 위반으로 업로드 취소됨', 'err');
+    return;
   }
 
   // ── 규정 4: 기관계정 지급액 있는 학생 → 이공계 강제 0 ──────
