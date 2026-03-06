@@ -1301,12 +1301,6 @@ function runValidation() {
         blocks.push({ student: st.name, id: st.id, msg: '학생인건비(기관) 연속 월 금액 불일치' });
     });
 
-    // ── 개별+기관 동월 중복 ─────────────────────────────────────
-    months.forEach(function(mo) {
-      if (getPayment(semId, st.id, 'ind', mo.month) > 0 && getPayment(semId, st.id, 'org', mo.month) > 0)
-        blocks.push({ student: st.name, id: st.id, msg: mo.month + '월 개별+기관 인건비 동시 입력' });
-    });
-
     // ================================================================
     // 조교수당 지급 규정 위반 체크
     // ================================================================
