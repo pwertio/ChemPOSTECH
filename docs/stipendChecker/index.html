@@ -426,11 +426,13 @@
                 <div class="degree-selector">
                     <div class="degree-option" onclick="selectDegree('master')" id="master">
                         <h3>석사 과정</h3>
-                        <p>기준금액: 80만원</p>
+                        <p>Stipend 지급가능 최대금액: 80만원</p>
+                        <p>산단회계 인정기준금액: 150만원</p>
                     </div>
                     <div class="degree-option" onclick="selectDegree('phd')" id="phd">
                         <h3>박사 과정</h3>
-                        <p>기준금액: 110만원</p>
+                        <p>Stipend 지급가능 최대금액: 110만원</p>
+                        <p>산단회계 인정기준금액: 180만원</p>
                     </div>
                 </div>
             </div>
@@ -545,12 +547,19 @@
                 return;
             }
 
-            // 기준 금액 설정
+            // 산단회계 인정기준금액 (인정 여부 판단 기준)
             const baseAmounts = {
-                master: 800000,  // 80만원
-                phd: 1100000     // 110만원
+                master: 1500000,  // 150만원
+                phd: 1800000      // 180만원
             };
             const baseAmount = baseAmounts[selectedDegree];
+
+            // Stipend 지급가능 최대금액 (결과 표시용)
+            const maxStipendAmounts = {
+                master: 800000,   // 80만원
+                phd: 1100000      // 110만원
+            };
+            const maxStipendAmount = maxStipendAmounts[selectedDegree];
 
             // 학생인건비 최저기준
             const minStudentSalary = {
@@ -655,6 +664,7 @@
             displayResult({
                 status: status,
                 baseAmount: baseAmount,
+                maxStipendAmount: maxStipendAmount,
                 recognizedTotal: recognizedTotal,
                 adjustmentAmount: adjustmentAmount,
                 message: message,
@@ -684,8 +694,12 @@
                         <div class="summary-value status ${result.status}">${result.status}</div>
                     </div>
                     <div class="summary-item">
-                        <div class="summary-label">기준 금액</div>
+                        <div class="summary-label">산단회계 인정기준금액</div>
                         <div class="summary-value">${formatCurrency(result.baseAmount)}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Stipend 지급가능 최대금액</div>
+                        <div class="summary-value">${formatCurrency(result.maxStipendAmount)}</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">인정 재원 합계</div>
