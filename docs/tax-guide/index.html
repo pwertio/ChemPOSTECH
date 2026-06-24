@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>International Visitor & Researcher Tax & Document Guide 외국인 방문자 및 연구자 세금 및 제출서류 안내</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            postech: {
+              DEFAULT: '#C10042',
+              dark: '#8A002E',
+              light: '#FFF0F4',
+              gray: '#4A4A4A'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #C10042; border-radius: 3px; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background-color: white !important; }
+      .print-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col justify-between text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-postech flex items-center justify-center rounded-lg text-white font-black text-xl tracking-wider">P</div>
+        <div>
+          <h1 class="font-bold text-base tracking-tight text-gray-900">Tax & Document Guide</h1>
+          <p class="text-[11px] text-gray-500 font-medium">Department of Chemistry, POSTECH | 포스텍 화학과 행정팀 제공</p>
+        </div>
+      </div>
+      <div class="flex gap-2 text-[11px] no-print">
+        <span class="px-2.5 py-1 bg-postech-light text-postech font-semibold rounded-full">Bilingual Support (영·한 병기)</span>
+        <span class="px-2.5 py-1 bg-gray-100 text-gray-600 font-semibold rounded-full">Chemistry Department</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-8 space-y-6">
+    
+    <div id="progressContainer" class="mb-4 hidden no-print">
+      <div class="flex justify-between text-xs text-gray-500 mb-2 font-medium">
+        <span id="progressText">Question Step</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+        <div id="progressBar" class="bg-postech h-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 md:p-10 transition-all duration-300 min-h-[440px] flex flex-col justify-between print-card">
+      
+      <!-- Screen 1: Welcome -->
+      <div id="screen-welcome" class="space-y-6">
+        <div class="text-center space-y-2 max-w-xl mx-auto mb-8">
+          <span class="text-postech font-bold text-xs uppercase tracking-widest bg-postech-light px-3 py-1 rounded-full">Tax & Documents self-check</span>
+          <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight pt-2">Welcome to POSTECH Chemistry!</h2>
+          <p class="text-gray-500 text-xs md:text-sm leading-relaxed">
+            Please complete this quick guide to determine required documents and tax treatments.<br>
+            귀하의 세무 및 행정 절차 진행에 필요한 제출 서류와 소득 구분을 확인하기 위해 알맞은 항목을 선택해 주세요.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button onclick="startWizard(1)" class="group text-left p-5 border border-gray-200 hover:border-postech/40 hover:bg-postech-light/10 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-postech">
+            <div class="flex gap-4">
+              <div class="w-12 h-12 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0 group-hover:bg-postech group-hover:text-white transition-colors duration-200"><i class="fa-solid fa-microphone text-lg"></i></div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-postech transition-colors duration-200">1. Short-term Invitee</h3>
+                <p class="text-xs text-gray-500 leading-normal">Lecture, seminar, review, advisory service.</p>
+                <p class="text-[11px] text-gray-400 font-medium leading-normal">강연·세미나·심사·자문 초청자</p>
+                <span class="inline-block pt-1.5 text-[11px] font-bold text-postech">Start / 시작하기 &rarr;</span>
+              </div>
+            </div>
+          </button>
+          <button onclick="startWizard(2)" class="group text-left p-5 border border-gray-200 hover:border-postech/40 hover:bg-postech-light/10 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-postech">
+            <div class="flex gap-4">
+              <div class="w-12 h-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-postech group-hover:text-white transition-colors duration-200"><i class="fa-solid fa-graduation-cap text-lg"></i></div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-postech transition-colors duration-200">2. Prospective Researcher</h3>
+                <p class="text-xs text-gray-500 leading-normal">Postdoc, Research Professor, Researcher joining POSTECH.</p>
+                <p class="text-[11px] text-gray-400 font-medium leading-normal">박사후연구원·연구원·연구교수 등 채용 예정자</p>
+                <span class="inline-block pt-1.5 text-[11px] font-bold text-postech">Start / 시작하기 &rarr;</span>
+              </div>
+            </div>
+          </button>
+          <button onclick="startWizard(3)" class="group text-left p-5 border border-gray-200 hover:border-postech/40 hover:bg-postech-light/10 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-postech">
+            <div class="flex gap-4">
+              <div class="w-12 h-12 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 group-hover:bg-postech group-hover:text-white transition-colors duration-200"><i class="fa-solid fa-passport text-lg"></i></div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-postech transition-colors duration-200">3. Visiting Scholar / Professor</h3>
+                <p class="text-xs text-gray-500 leading-normal">Visiting researcher, scholar, or visiting professor.</p>
+                <p class="text-[11px] text-gray-400 font-medium leading-normal">방문연구자·방문교수·석학교원 후보자</p>
+                <span class="inline-block pt-1.5 text-[11px] font-bold text-postech">Start / 시작하기 &rarr;</span>
+              </div>
+            </div>
+          </button>
+          <button onclick="startWizard(4)" class="group text-left p-5 border border-gray-200 hover:border-postech/40 hover:bg-postech-light/10 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-postech">
+            <div class="flex gap-4">
+              <div class="w-12 h-12 rounded-lg bg-green-100 text-green-600 flex items-center justify-center shrink-0 group-hover:bg-postech group-hover:text-white transition-colors duration-200"><i class="fa-solid fa-house-user text-lg"></i></div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-postech transition-colors duration-200">4. Currently Residing in Korea</h3>
+                <p class="text-xs text-gray-500 leading-normal">Already living in Korea (ARC holders) receiving payment.</p>
+                <p class="text-[11px] text-gray-400 font-medium leading-normal">이미 국내 거주 중인 외국인 연구자/방문객</p>
+                <span class="inline-block pt-1.5 text-[11px] font-bold text-postech">Start / 시작하기 &rarr;</span>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Screen 2: Questions -->
+      <div id="screen-questions" class="space-y-6 hidden">
+        <div>
+          <span id="questionCategory" class="text-[10px] font-bold tracking-wider text-postech bg-postech-light px-2.5 py-0.5 rounded-full uppercase">Category</span>
+          <h3 id="questionTitle" class="text-xl md:text-2xl font-bold text-gray-900 mt-3 leading-snug">Question Text Here?</h3>
+          <p id="questionSubtitle" class="text-gray-500 text-xs md:text-sm mt-1">Helpful contextual guidance for international users.</p>
+        </div>
+        <div id="optionsContainer" class="space-y-3 my-6"></div>
+        <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+          <button onclick="goBack()" class="flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors">
+            <i class="fa-solid fa-arrow-left"></i> Back / 뒤로가기
+          </button>
+          <span class="text-[11px] text-gray-400 font-medium">Please answer to proceed / 답변을 완료해주세요</span>
+        </div>
+      </div>
+
+      <!-- Screen 2.5: Loading -->
+      <div id="screen-loading" class="space-y-6 text-center py-16 hidden">
+        <div class="inline-block w-12 h-12 border-4 border-postech border-t-transparent rounded-full animate-spin"></div>
+        <div class="space-y-2">
+          <h3 class="text-lg font-bold text-gray-900">Evaluating your profile...</h3>
+          <p class="text-xs text-gray-500">Searching publicly available tax-related web sources for reference.<br>공개된 세무 관련 자료를 참고하여 사전 안내를 생성하고 있습니다. 잠시만 대기해주세요.</p>
+        </div>
+      </div>
+
+      <!-- Screen 3: Result -->
+      <div id="screen-result" class="space-y-6 hidden">
+        <div class="text-center border-b border-gray-100 pb-5">
+          <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fa-solid fa-circle-check text-xl"></i></div>
+          <h3 class="text-lg md:text-xl font-extrabold text-gray-900">Your Preliminary Roadmap Is Ready</h3>
+          <p class="text-xs text-gray-400">예비 안내서가 준비되었습니다. 학과 서류 검토 및 정산용으로 사용 가능합니다.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-100">
+            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 border-b border-gray-200 pb-1.5 flex justify-between"><span>Administrative Profile</span><span>행정 요약</span></h4>
+            <div><span class="text-[10px] text-gray-500 font-semibold block">Tax Residence Status / 세법상 신분</span><span id="resTaxStatus" class="font-bold text-gray-900 text-xs md:text-sm">-</span></div>
+            <div><span class="text-[10px] text-gray-500 font-semibold block">Primary Income Type / 소득 유형</span><span id="resIncomeType" class="font-bold text-gray-900 text-xs md:text-sm">-</span></div>
+            <div><span class="text-[10px] text-gray-500 font-semibold block">Expected Tax Treatment / 예상 세무 처리</span><span id="resTaxTreatment" class="font-bold text-gray-900 text-xs md:text-sm text-postech">-</span></div>
+            <div><span class="text-[10px] text-gray-500 font-semibold block">Visa Note / 비자 참고사항</span><span id="resVisaNote" class="font-medium text-gray-700 text-xs leading-relaxed">-</span></div>
+          </div>
+          <div class="space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-100 flex flex-col justify-between">
+            <div>
+              <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 border-b border-gray-200 pb-1.5 flex justify-between"><span>Required Documents</span><span>필수 제출 서류</span></h4>
+              <ul id="resDocumentsList" class="space-y-2 text-xs text-gray-700"></ul>
+            </div>
+          </div>
+        </div>
+        <div id="treatyStatusCard" class="hidden p-4 rounded-xl border flex gap-3.5 items-start">
+          <div id="treatyStatusIcon" class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"></div>
+          <div>
+            <h4 id="treatyStatusTitle" class="font-bold text-xs"></h4>
+            <p id="treatyStatusDesc" class="text-[11px] leading-relaxed mt-1"></p>
+          </div>
+        </div>
+        <div id="treatyChecklistArea" class="hidden space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-150">
+          <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 pb-1.5 flex justify-between"><span>Bilateral Treaty Clause Details</span><span>조세조약 면제 요건 대조표</span></h4>
+          <div class="space-y-2 text-xs text-gray-700" id="treatyChecklistContainer"></div>
+        </div>
+        <div class="border border-gray-200 rounded-xl overflow-hidden bg-white">
+          <button onclick="toggleAccordion()" class="w-full p-4 text-left flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none">
+            <span class="text-xs font-bold text-gray-700 flex items-center gap-1.5"><i class="fa-solid fa-circle-question text-postech"></i>Why did I get this result? / 왜 이런 결과가 나왔나요?</span>
+            <i id="accordionIcon" class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200"></i>
+          </button>
+          <div id="accordionContent" class="hidden border-t border-gray-100 p-4 bg-white text-xs text-gray-600 space-y-3 leading-relaxed">
+            <p id="resWhyText"></p>
+            <div class="border-t border-gray-100 pt-3 space-y-1.5">
+              <p class="font-semibold text-gray-900 text-[11px] uppercase tracking-wider">Useful Resources (English) / 국가공식 세법 정보 링크:</p>
+              <div class="flex flex-wrap gap-2 pt-1">
+                <a href="https://www.nts.go.kr/english/main.do" target="_blank" class="px-2 py-1 bg-gray-100 hover:bg-postech-light hover:text-postech text-[10px] text-gray-600 rounded font-medium transition-all">National Tax Service (NTS) Korea &rarr;</a>
+                <a href="https://taxlaw.nts.go.kr/st/USESTC001M.do" target="_blank" class="px-2 py-1 bg-gray-100 hover:bg-postech-light hover:text-postech text-[10px] text-gray-600 rounded font-medium transition-all">국세청 국세법령정보시스템 &rarr;</a>
+                <a href="https://www.law.go.kr/LSW/eng/engMain.do" target="_blank" class="px-2 py-1 bg-gray-100 hover:bg-postech-light hover:text-postech text-[10px] text-gray-600 rounded font-medium transition-all">Ministry of Legislation (MOLEG) &rarr;</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" id="taxConsentCheckbox" class="mt-1 w-4 h-4 rounded text-postech border-gray-300 focus:ring-postech">
+            <span id="taxConsentLabel" class="text-[11px] text-gray-600 leading-relaxed"></span>
+          </label>
+        </div>
+        <div class="bg-amber-50 border border-amber-200/60 p-5 rounded-xl flex gap-3.5 items-start">
+          <div class="w-8 h-8 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-triangle-exclamation text-base"></i></div>
+          <div>
+            <h4 class="font-bold text-amber-900 text-xs">Department Review Required before Payment Processing</h4>
+            <h5 class="text-[11px] text-amber-800 font-semibold">지급 처리 전 학과 행정팀 서류 검토 필수</h5>
+            <p class="text-[11px] text-amber-800/90 leading-relaxed mt-1" id="resNextStepText">Please check the box above, save/print this checklist, and email it along with all required documents to your inviter/department staff.</p>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100 no-print">
+          <button onclick="resetWizard()" class="flex-1 py-3 border border-gray-200 hover:bg-gray-50 font-bold text-xs text-gray-700 rounded-xl transition-all duration-200"><i class="fa-solid fa-rotate-left mr-1"></i> Restart / 다시 시작하기</button>
+          <button onclick="handlePrint()" class="flex-1 py-3 bg-postech hover:bg-postech-dark text-white font-bold text-xs rounded-xl transition-all duration-200 shadow-sm"><i class="fa-solid fa-print mr-1"></i> Save or Print Report / 보고서 인쇄 및 저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center hidden no-print">
+      <div class="bg-white p-6 rounded-2xl max-w-sm w-full mx-4 shadow-xl border border-gray-100 space-y-4">
+        <div class="flex items-center gap-3 text-postech"><i class="fa-solid fa-circle-exclamation text-xl"></i><h4 class="font-bold text-gray-900">Notification / 알림</h4></div>
+        <p id="alertModalText" class="text-xs text-gray-600 leading-relaxed"></p>
+        <button onclick="closeAlertModal()" class="w-full py-2 bg-postech text-white font-bold text-xs rounded-lg hover:bg-postech-dark transition-colors">Confirm / 확인</button>
+      </div>
+    </div>
+
+    <!-- AI Co-Pilot -->
+    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 md:p-10 transition-all duration-300 no-print">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-postech-light text-postech flex items-center justify-center rounded-xl"><i class="fa-solid fa-robot text-lg"></i></div>
+          <div>
+            <h3 class="font-bold text-gray-900 text-sm md:text-base flex items-center gap-2">POSTECH Chemistry Tax Co-Pilot (AI)<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-2.5 py-0.5 rounded-full">Preliminary AI Reference</span></h3>
+            <p class="text-[11px] text-gray-500">Ask tax-related questions. Reference only. | 국세청, 국세법령정보시스템 및 법제처 공개자료 참고 답변봇</p>
+          </div>
+        </div>
+      </div>
+      <div class="my-5">
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">💡 Quick Preset Inquiries / 자주 묻는 질문</span>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="askPreset('독일 거주자 연구원의 교직원/교수 조세조약 비과세 면세 요건은 어떻게 되나요? / Tax treaty exemption requirements for a German resident researcher?')" class="text-[11px] bg-gray-50 hover:bg-postech-light hover:text-postech border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-all text-left">독일 연구자 면세요건 (DE)</button>
+          <button onclick="askPreset('비거주자 독립인적용역 면세 신청 시 국세청(NTS) 거주자증명서(Certificate of Residence) 제출 기한과 유효기간 / Validity of Certificate of Residence for non-residents.')" class="text-[11px] bg-gray-50 hover:bg-postech-light hover:text-postech border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-all text-left">거주자증명서 기한 (Validity)</button>
+          <button onclick="askPreset('미국 거주자 독립인적용역 대가가 연간 3,000불 미만이나 체류일이 183일 초과일 경우의 원천징수 세율 / US independent service under 3k but over 183 days stay.')" class="text-[11px] bg-gray-50 hover:bg-postech-light hover:text-postech border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-all text-left">미국 3,000불 초과 세법 (US)</button>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <div class="flex gap-2">
+          <input type="text" id="aiInput" placeholder="Ask about Korean tax treaties (e.g. 벨기에 거주자 비과세 요건)..." class="flex-1 p-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-postech text-xs font-medium">
+          <button onclick="queryAI()" id="aiSendBtn" class="bg-postech hover:bg-postech-dark text-white px-4 py-3.5 rounded-xl font-bold text-xs shrink-0 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-paper-plane"></i> Ask AI</button>
+        </div>
+        <div id="aiLoading" class="hidden text-center py-8 space-y-2">
+          <div class="inline-block w-6 h-6 border-3 border-postech border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-xs text-gray-500">Searching publicly available tax-related web sources... / 세무 관련 공개 자료 조회 중...</p>
+        </div>
+        <div id="aiResponseBox" class="hidden border border-gray-100 bg-gray-50 rounded-xl p-5 space-y-4">
+          <div class="flex items-center gap-2 text-postech font-bold text-xs uppercase tracking-wider"><i class="fa-solid fa-circle-nodes text-sm"></i> AI-Generated Web Reference Response / 공개 자료 참고 응답</div>
+          <div id="aiResponseText" class="text-xs md:text-sm text-gray-700 leading-relaxed space-y-2 custom-scrollbar max-h-96 overflow-y-auto pr-2"></div>
+          <div id="aiSources" class="border-t border-gray-200/60 pt-3 hidden">
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Public Web References Consulted / 참고한 공개 웹 자료</span>
+            <div id="aiSourcesContainer" class="flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t border-gray-100 py-6 text-center text-[11px] text-gray-400 font-medium">
+    <div class="max-w-4xl mx-auto px-4 space-y-1.5">
+      <p>Department of Chemistry, POSTECH (Pohang University of Science and Technology) Administration Team</p>
+      <p>Disclaimer: This checklist provides a preliminary guide for departmental administrative purposes. Actual tax treatment is finalized upon formal document verification by the department administrator in accordance with the Korean tax law.</p>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       treatyData.js (인라인 통합 버전 / Inline Merged)
+       ============================================================ -->
+  <script>
+// =============================================================
+// treatyData.js — 인라인 통합
+// =============================================================
+
+const RULE_STATUS = Object.freeze({ UNREVIEWED:"unreviewed", IN_PROGRESS:"in_progress", VERIFIED:"verified" });
+const DISPLAY_MODE = Object.freeze({ SHOW_FULL:"show_full", SHOW_PARTIAL:"show_partial", LINK_ONLY:"link_only", NO_TREATY:"no_treaty", UNKNOWN:"unknown" });
+const CONDITION_TYPE = Object.freeze({ FIXED:"fixed", NONE:"none", UNKNOWN:"unknown", TREATY_SPECIFIC:"treaty_specific" });
+const OPERATOR = Object.freeze({ LT:"LT", LTE:"LTE", GT:"GT", GTE:"GTE", EQ:"EQ" });
+const PERIOD_BASIS = Object.freeze({ CALENDAR_YEAR:"calendar_year", TAXABLE_YEAR:"taxable_year", FISCAL_YEAR:"fiscal_year", ANY_12_MONTHS:"any_12_months", WITHIN_365_DAYS:"within_365_days", VISIT_PERIOD:"visit_period", CONTRACT_PERIOD:"contract_period", NOT_APPLICABLE:"not_applicable", TREATY_TEXT_REQUIRED:"treaty_text_required", UNKNOWN:"unknown" });
+const AMOUNT_BASIS_TYPE = Object.freeze({ MONETARY_THRESHOLD:"monetary_threshold", NO_MONETARY_THRESHOLD:"no_monetary_threshold", UNKNOWN:"unknown" });
+const STAY_BASIS_TYPE = Object.freeze({ DAYS:"days", MONTHS:"months", MONTHS_WITHIN_DAYS:"months_within_days", NO_STAY_THRESHOLD:"no_stay_threshold", UNKNOWN:"unknown" });
+const STAY_UNIT = Object.freeze({ DAYS:"days", MONTHS:"months" });
+const PLACEHOLDER_TEXT = "[작성 필요]";
+
+const operatorLabels = { LT:{ko:"미만",en:"less than"}, LTE:{ko:"이하 또는 초과하지 않음",en:"not exceeding / less than or equal to"}, GT:{ko:"초과",en:"exceeding / greater than"}, GTE:{ko:"이상",en:"at least / greater than or equal to"}, EQ:{ko:"같음",en:"equal to"} };
+const periodBasisLabels = { calendar_year:{ko:"역년 기준",en:"calendar year basis"}, taxable_year:{ko:"과세연도 기준",en:"taxable year basis"}, fiscal_year:{ko:"회계연도 기준",en:"fiscal year basis"}, any_12_months:{ko:"어느 12개월 기간 기준",en:"any 12-month period basis"}, within_365_days:{ko:"어느 365일 기간 기준",en:"within any 365-day period"}, visit_period:{ko:"해당 방문기간 기준",en:"visit-period basis"}, contract_period:{ko:"해당 계약기간 기준",en:"contract-period basis"}, not_applicable:{ko:"해당 없음",en:"not applicable"}, treaty_text_required:{ko:"조세조약 원문 확인 필요",en:"treaty text review required"}, unknown:{ko:"미확인",en:"unknown"} };
+
+function ko은는(name) { if (!name||typeof name!=="string") return "은"; const c=name.charCodeAt(name.length-1); if(c<0xac00||c>0xd7a3) return "은"; return (c-0xac00)%28>0?"은":"는"; }
+function ko이가(name) { if (!name||typeof name!=="string") return "이"; const c=name.charCodeAt(name.length-1); if(c<0xac00||c>0xd7a3) return "이"; return (c-0xac00)%28>0?"이":"가"; }
+
+function createUnknownAmountCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, amountBasisType:AMOUNT_BASIS_TYPE.UNKNOWN, threshold:null, currency:null, operator:null, periodBasis:PERIOD_BASIS.TREATY_TEXT_REQUIRED, displayTextKo:"금액 기준은 해당 국가 조세조약 원문 확인 필요", displayTextEn:"Monetary threshold requires review of the applicable treaty text", noteKo:noteKo||"USD 3,000, USD 10,000, USD 12,000 또는 금액 기준 없음 등 국가별로 다를 수 있음", noteEn:noteEn||"The treaty may provide USD 3,000, USD 10,000, USD 12,000, no monetary threshold, or another country-specific rule.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
+function createUnknownStayCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, stayBasisType:STAY_BASIS_TYPE.UNKNOWN, threshold:null, unit:null, operator:null, periodBasis:PERIOD_BASIS.TREATY_TEXT_REQUIRED, displayTextKo:"체류기간 기준은 해당 국가 조세조약 원문 확인 필요", displayTextEn:"Stay-period condition requires review of the applicable treaty text", noteKo:noteKo||"90일, 120일, 183일, 6개월, 365일 중 6개월 초과 등 국가별 기준이 다를 수 있음", noteEn:noteEn||"The treaty may provide 90 days, 120 days, 183 days, 6 months, more than 6 months within 365 days, or another country-specific rule.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
+function createUnknownFixedBaseCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, mustNotHaveFixedBaseInKorea:null, displayTextKo:"한국 내 고정시설 관련 조건은 해당 국가 조세조약 원문 확인 필요", displayTextEn:"Fixed base / fixed place condition requires review of the applicable treaty text", scopeKo:"부동산, 사무소, 연구실, 업무공간, 지점 등 소유·임차·계속 사용 가능한 고정된 장소", scopeEn:"Real estate, office, laboratory, workspace, branch, or other fixed place owned, leased, or regularly used in Korea", noteKo:noteKo||"일회성 강의실·회의실 제공 여부가 아니라, 국내 고정된 장소 보유·임차·계속 사용 여부를 확인해야 함", noteEn:noteEn||"This asks whether the person or affiliated institution has a fixed place in Korea, not whether a temporary lecture room or meeting room is provided.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
+function createUnknownPayerBurdenCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, required:null, appliesTo:[], displayTextKo:"대가 부담 주체 조건은 해당 국가 조세조약 원문 확인 필요", displayTextEn:"Payer-burden condition requires review of the applicable treaty text", noteKo:noteKo||"대가를 국내 거주자, 국내 법인, 국내 고정사업장 또는 고정시설이 부담하는지 여부가 조약별로 달라질 수 있음", noteEn:noteEn||"Treaties may differ on whether the remuneration is borne by a Korean resident, Korean corporation, permanent establishment, or fixed base in Korea.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
+
+function createFixedAmountCondition({threshold,currency,operator,periodBasis,displayTextKo,displayTextEn,sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.FIXED, amountBasisType:AMOUNT_BASIS_TYPE.MONETARY_THRESHOLD, threshold, currency, operator, periodBasis, displayTextKo, displayTextEn, noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
+function createNoAmountCondition({displayTextKo="해당 조항에 별도 금액 기준 없음",displayTextEn="No separate monetary threshold under this article",sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.NONE, amountBasisType:AMOUNT_BASIS_TYPE.NO_MONETARY_THRESHOLD, threshold:null, currency:null, operator:null, periodBasis:PERIOD_BASIS.NOT_APPLICABLE, displayTextKo, displayTextEn, noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
+function createFixedStayDaysCondition({threshold,operator,periodBasis,displayTextKo,displayTextEn,sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.FIXED, stayBasisType:STAY_BASIS_TYPE.DAYS, threshold, unit:STAY_UNIT.DAYS, operator, periodBasis, displayTextKo, displayTextEn, noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
+function createFixedStayMonthsWithinPeriodCondition({threshold,operator,periodBasis,displayTextKo,displayTextEn,sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.FIXED, stayBasisType:STAY_BASIS_TYPE.MONTHS_WITHIN_DAYS, threshold, unit:STAY_UNIT.MONTHS, operator, periodBasis, displayTextKo, displayTextEn, noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
+function createNoStayCondition({displayTextKo="해당 조항에 별도 체류기간 기준 없음",displayTextEn="No separate stay-period threshold under this article",sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.NONE, stayBasisType:STAY_BASIS_TYPE.NO_STAY_THRESHOLD, threshold:null, unit:null, operator:null, periodBasis:PERIOD_BASIS.NOT_APPLICABLE, displayTextKo, displayTextEn, noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
+function createFixedBaseCondition({mustNotHaveFixedBaseInKorea,displayTextKo,displayTextEn,sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.FIXED, mustNotHaveFixedBaseInKorea, displayTextKo, displayTextEn, scopeKo:"부동산, 사무소, 연구실, 업무공간, 지점 등 소유·임차·계속 사용 가능한 고정된 장소", scopeEn:"Real estate, office, laboratory, workspace, branch, or other fixed place owned, leased, or regularly used in Korea", noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
+function createPayerBurdenCondition({required,appliesTo=[],displayTextKo,displayTextEn,sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.FIXED, required, appliesTo, displayTextKo, displayTextEn, noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
+
+const treatyData = {
+  "United States": {
+    meta: { koName:"미국", enName:"United States", hasTreaty:true, ntsUrl:"https://taxlaw.nts.go.kr/st/USESTC002M.do?txaAgrmBscId=200000000000000078", treatyStatus:"In force", source:"NTS Tax Law Information System / 국세청 국세법령정보시스템", lastLinkChecked:"2026-06-23", lastRuleReviewed:"2026-06-23", ruleStatus:RULE_STATUS.VERIFIED, notes:["국세청 원문 및 세부 규칙 대조 완료 (포스텍 화학과 행정팀)","과세연도 기준 미화 3천불 초과, 또는 183일 이상 고정시설 보유(유지) 중 하나 충족 시 과세 적용될 수 있음"] },
+    independentPersonalServices: {
+      article: { number:"제18조", titleEn:"Independent Personal Services", titleKo:"독립적 인적용역", sourceTextNote:"원문 대조 완료 (2026-06-23)" },
+      amountCondition: createFixedAmountCondition({ threshold:3000, currency:"USD", operator:OPERATOR.LTE, periodBasis:PERIOD_BASIS.TAXABLE_YEAR, displayTextKo:"해당 과세연도 중 지급받는 총 대가가 미화 3,000달러를 초과하지 아니하는 경우", displayTextEn:"Total remuneration received during the taxable year does not exceed USD 3,000", sourceArticle:"제18조 제1항 (나)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      stayCondition: createFixedStayDaysCondition({ threshold:183, operator:OPERATOR.LTE, periodBasis:PERIOD_BASIS.TAXABLE_YEAR, displayTextKo:"해당 과세연도 중 대한민국 내에 체류하는 기간이 총 183일을 초과하지 아니하는 경우", displayTextEn:"Stay in Korea during the taxable year does not exceed 183 days", sourceArticle:"제18조 제1항 (가)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      fixedBaseCondition: createFixedBaseCondition({ mustNotHaveFixedBaseInKorea:true, displayTextKo:"해당 과세연도 중 대한민국 내에 고정시설을 총 183일 이상 유지하지 아니하는 경우", displayTextEn:"The individual does not maintain a fixed base in Korea for aggregating 183 days or more", sourceArticle:"제18조 제1항 (다)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      payerBurdenCondition: createPayerBurdenCondition({ required:false, appliesTo:[], displayTextKo:"해당 조항에 대가 지급 주체의 부담 조건이 부재함 (누가 지급해도 무관)", displayTextEn:"No separate payer-burden condition under this article", sourceArticle:"제18조", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" })
+    }
+  },
+  "Malaysia": {
+    meta: { koName:"말레이시아", enName:"Malaysia", hasTreaty:true, ntsUrl:"https://taxlaw.nts.go.kr/st/USESTC002M.do?txaAgrmBscId=200000000000000088", treatyStatus:"In force", source:"NTS Tax Law Information System / 국세청 국세법령정보시스템", lastLinkChecked:"2026-06-23", lastRuleReviewed:"2026-06-23", ruleStatus:RULE_STATUS.VERIFIED, notes:["국세청 원문 및 세부 규칙 대조 완료 (포스텍 화학과 행정팀)","말레이시아 거주자가 역년 중 미화 3천불 초과 수령 시 원천징수 적용 가능"] },
+    independentPersonalServices: {
+      article: { number:"제14조", titleEn:"Independent Personal Services", titleKo:"독립적 인적용역", sourceTextNote:"원문 대조 완료 (2026-06-23)" },
+      amountCondition: createFixedAmountCondition({ threshold:3000, currency:"USD", operator:OPERATOR.LTE, periodBasis:PERIOD_BASIS.CALENDAR_YEAR, displayTextKo:"해당 역년(Calendar Year) 중 지급받는 총 대가가 미화 3,000달러를 초과하지 아니하는 경우", displayTextEn:"Total remuneration received during the calendar year does not exceed USD 3,000", sourceArticle:"제14조 제1항 (나)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      stayCondition: createFixedStayDaysCondition({ threshold:183, operator:OPERATOR.LTE, periodBasis:PERIOD_BASIS.CALENDAR_YEAR, displayTextKo:"해당 역년 중 대한민국 내에 체류하는 기간이 총 183일을 초과하지 아니하는 경우", displayTextEn:"Stay in Korea during the calendar year does not exceed 183 days", sourceArticle:"제14조 제1항 (가)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      fixedBaseCondition: createFixedBaseCondition({ mustNotHaveFixedBaseInKorea:true, displayTextKo:"대한민국 내에 용역 수행을 위한 고정시설을 정기적으로 이용 가능하도록 두고 있지 아니하는 경우", displayTextEn:"The individual does not have a fixed base regularly available in Korea for performing the services", sourceArticle:"제14조 제1항", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      payerBurdenCondition: createPayerBurdenCondition({ required:true, appliesTo:["korean_resident","korean_permanent_establishment"], displayTextKo:"대가가 대한민국 거주자 또는 고정사업장에 의해 부담되지 아니하는 경우", displayTextEn:"The remuneration is not borne by a Korean resident or permanent establishment in Korea", sourceArticle:"제14조 제1항 (다)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" })
+    }
+  },
+  "Japan": {
+    meta: { koName:"일본", enName:"Japan", hasTreaty:true, ntsUrl:"https://taxlaw.nts.go.kr/st/USESTC002M.do?txaAgrmBscId=200000000000000086", treatyStatus:"In force", source:"NTS Tax Law Information System / 국세청 국세법령정보시스템", lastLinkChecked:"2026-06-23", lastRuleReviewed:"2026-06-23", ruleStatus:RULE_STATUS.VERIFIED, notes:["국세청 원문 및 세부 규칙 대조 완료 (포스텍 화학과 행정팀)","금액 제한 요건 없음. 체류 기간 183일 초과 또는 국내 고정시설 정기 이용 시 과세 적용 가능"] },
+    independentPersonalServices: {
+      article: { number:"제14조", titleEn:"Independent Personal Services", titleKo:"독립적 인적용역", sourceTextNote:"원문 대조 완료 (2026-06-23)" },
+      amountCondition: createNoAmountCondition({ sourceArticle:"제14조", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      stayCondition: createFixedStayDaysCondition({ threshold:183, operator:OPERATOR.LTE, periodBasis:PERIOD_BASIS.ANY_12_MONTHS, displayTextKo:"어느 12개월 기간 중 대한민국 내에서 체류한 기간이 총 183일을 초과하지 아니하는 경우", displayTextEn:"Stay in Korea during any 12-month period does not exceed 183 days", sourceArticle:"제14조 제1항 (가)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      fixedBaseCondition: createFixedBaseCondition({ mustNotHaveFixedBaseInKorea:true, displayTextKo:"대한민국 내에 용역 수행을 위한 고정시설을 정기적으로 이용 가능하도록 두고 있지 아니하는 경우", displayTextEn:"The individual does not have a fixed base regularly available in Korea for performing the services", sourceArticle:"제14조 제1항", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      payerBurdenCondition: createPayerBurdenCondition({ required:false, appliesTo:[], displayTextKo:"해당 조항에 대가 지급 주체의 부담 조건이 부재함 (누가 지급해도 무관)", displayTextEn:"No separate payer-burden condition under this article", sourceArticle:"제14조", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" })
+    }
+  },
+  "China": {
+    meta: { koName:"중국", enName:"China", hasTreaty:true, ntsUrl:"https://taxlaw.nts.go.kr/st/USESTC002M.do?txaAgrmBscId=200000000000000099", treatyStatus:"In force", source:"NTS Tax Law Information System / 국세청 국세법령정보시스템", lastLinkChecked:"2026-06-23", lastRuleReviewed:"2026-06-23", ruleStatus:RULE_STATUS.VERIFIED, notes:["국세청 원문 및 세부 규칙 대조 완료 (포스텍 화학과 행정팀)","금액 제한 요건 없음. 역년 183일 초과 체류 또는 국내 고정시설 정기 이용 시 과세 적용 가능"] },
+    independentPersonalServices: {
+      article: { number:"제14조", titleEn:"Independent Personal Services", titleKo:"독립적 인적용역", sourceTextNote:"원문 대조 완료 (2026-06-23)" },
+      amountCondition: createNoAmountCondition({ sourceArticle:"제14조", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      stayCondition: createFixedStayDaysCondition({ threshold:183, operator:OPERATOR.LTE, periodBasis:PERIOD_BASIS.CALENDAR_YEAR, displayTextKo:"해당 역년(Calendar Year) 중 대한민국 내에서 체류한 기간이 총 183일을 초과하지 아니하는 경우", displayTextEn:"Stay in Korea during the calendar year does not exceed 183 days", sourceArticle:"제14조 제1항 (나)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      fixedBaseCondition: createFixedBaseCondition({ mustNotHaveFixedBaseInKorea:true, displayTextKo:"대한민국 내에 용역 수행을 위한 고정시설을 정기적으로 이용 가능하도록 두고 있지 아니하는 경우", displayTextEn:"The individual does not have a fixed base regularly available in Korea for performing the services", sourceArticle:"제14조 제1항 (가)호", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" }),
+      payerBurdenCondition: createPayerBurdenCondition({ required:false, appliesTo:[], displayTextKo:"해당 조항에 대가 지급 주체의 부담 조건이 부재함", displayTextEn:"No separate payer-burden condition under this article", sourceArticle:"제14조", verifiedBy:"포스텍 화학과 행정팀 / Chemistry Dept", verifiedDate:"2026-06-23" })
+    }
+  },
+  "Germany": {
+    meta: { koName:"독일", enName:"Germany", hasTreaty:true, ntsUrl:"https://taxlaw.nts.go.kr/st/USESTC002M.do?txaAgrmBscId=200000000000000094", treatyStatus:"In force", source:"NTS Tax Law Information System / 국세청 국세법령정보시스템", lastLinkChecked:"2026-06-23", lastRuleReviewed:null, ruleStatus:RULE_STATUS.UNREVIEWED, notes:["국세청 원문 링크 등록 완료","조건표 미작성. 담당자 원문 수동 대조 필요"] },
+    independentPersonalServices: null
+  }
+};
+
+function getTreatyEntry(countryKey) {
+  if (treatyData[countryKey]) return treatyData[countryKey];
+  return { meta:{ koName:countryKey||"미등록 국가", enName:countryKey||"Unknown Country", hasTreaty:null, ntsUrl:null, treatyStatus:"Unknown", source:null, lastLinkChecked:null, lastRuleReviewed:null, ruleStatus:RULE_STATUS.UNREVIEWED, notes:["등록되지 않은 국가입니다.","조세조약 미체결국으로 확정된 것이 아닙니다.","국세청 조세조약 체결 현황 및 원문 확인이 필요합니다.","학과/재무부서 검토 후 처리해야 합니다."] }, independentPersonalServices:null };
+}
+
+function getDisplayMode(countryKey) {
+  const entry = getTreatyEntry(countryKey);
+  if (entry.meta.hasTreaty===false) return DISPLAY_MODE.NO_TREATY;
+  if (entry.meta.hasTreaty===null||entry.meta.hasTreaty===undefined) return DISPLAY_MODE.UNKNOWN;
+  switch(entry.meta.ruleStatus) {
+    case RULE_STATUS.VERIFIED: return DISPLAY_MODE.SHOW_FULL;
+    case RULE_STATUS.IN_PROGRESS: return DISPLAY_MODE.SHOW_PARTIAL;
+    case RULE_STATUS.UNREVIEWED: return DISPLAY_MODE.LINK_ONLY;
+    default: return DISPLAY_MODE.LINK_ONLY;
+  }
+}
+
+function isVerifiedCountry(countryKey) { const e=treatyData[countryKey]; return Boolean(e&&e.meta&&e.meta.hasTreaty===true&&e.meta.ruleStatus===RULE_STATUS.VERIFIED); }
+function canShowRuleDetails(countryKey) { return getDisplayMode(countryKey)===DISPLAY_MODE.SHOW_FULL; }
+function isUnknownCondition(c) { return !c||c.conditionType===CONDITION_TYPE.UNKNOWN; }
+function isNoCondition(c) { return c&&c.conditionType===CONDITION_TYPE.NONE; }
+function isFixedCondition(c) { return c&&c.conditionType===CONDITION_TYPE.FIXED; }
+
+function getRuleStatusMessage(countryKey) {
+  const entry=getTreatyEntry(countryKey), mode=getDisplayMode(countryKey), koName=entry.meta.koName, enName=entry.meta.enName;
+  switch(mode) {
+    case DISPLAY_MODE.SHOW_FULL: return { level:"success", titleKo:"담당자 검토 완료 조건표", titleEn:"Reviewed treaty condition table available", messageKo:`${koName}${ko은는(koName)} 조세조약 조건표가 담당자에 의해 국세청 조세조약 원문과 대조 완료되었습니다. 다만 최종 비과세 적용은 제출서류, 실제 지급 조건 및 학과/재무부서 검토 후 확정됩니다.`, messageEn:`The treaty condition table for ${enName} has been reviewed against the official NTS treaty text. Final tax treatment still depends on submitted documents, actual payment conditions, and department/finance review.` };
+    case DISPLAY_MODE.SHOW_PARTIAL: return { level:"warning", titleKo:"조건표 검토 중", titleEn:"Treaty condition table under review", messageKo:`${koName}${ko은는(koName)} 조세조약 조건표가 현재 검토 중입니다.`, messageEn:`The treaty condition table for ${enName} is under review.` };
+    case DISPLAY_MODE.LINK_ONLY: return { level:"info", titleKo:"국세청 원문 확인 필요", titleEn:"Official treaty text review required", messageKo:`${koName}${ko은는(koName)} 조세조약 체결 사실과 국세청 원문 링크만 등록되어 있습니다. 국가별 기준금액, 체류기간, 고정시설, 대가 부담 주체 조건은 국세청 원문 확인 후 검토해야 합니다.`, messageEn:`Only the treaty status and official NTS treaty link are registered for ${enName}. Country-specific conditions require review of the official treaty text.` };
+    case DISPLAY_MODE.NO_TREATY: return { level:"danger", titleKo:"조세조약 미체결국", titleEn:"No applicable tax treaty confirmed", messageKo:`${koName}${ko은는(koName)} 조세조약 미체결국으로 확인된 상태입니다.`, messageEn:`${enName} is confirmed as having no applicable tax treaty.` };
+    default: return { level:"warning", titleKo:"국가 정보 미등록 또는 조약 체결 여부 미확인", titleEn:"Country information not registered or treaty status unknown", messageKo:`${koName}${ko은는(koName)} 현재 로컬 데이터에 등록되어 있지 않거나 조세조약 체결 여부가 확인되지 않은 상태입니다. 이는 조세조약 미체결을 의미하지 않으며, 국세청 조세조약 현황 및 원문 확인 후 학과/재무부서 검토가 필요합니다.`, messageEn:`${enName} is not registered in the local dataset or its treaty status has not been confirmed. This does not mean that no treaty exists. Please check the NTS treaty status and official treaty text before processing.` };
+  }
+}
+
+// 브라우저 전역 export
+window.RULE_STATUS=RULE_STATUS; window.DISPLAY_MODE=DISPLAY_MODE; window.CONDITION_TYPE=CONDITION_TYPE; window.OPERATOR=OPERATOR; window.PERIOD_BASIS=PERIOD_BASIS; window.AMOUNT_BASIS_TYPE=AMOUNT_BASIS_TYPE; window.STAY_BASIS_TYPE=STAY_BASIS_TYPE; window.STAY_UNIT=STAY_UNIT; window.PLACEHOLDER_TEXT=PLACEHOLDER_TEXT;
+window.operatorLabels=operatorLabels; window.periodBasisLabels=periodBasisLabels;
+window.ko은는=ko은는; window.ko이가=ko이가;
+window.createUnknownAmountCondition=createUnknownAmountCondition; window.createUnknownStayCondition=createUnknownStayCondition; window.createUnknownFixedBaseCondition=createUnknownFixedBaseCondition; window.createUnknownPayerBurdenCondition=createUnknownPayerBurdenCondition;
+window.createFixedAmountCondition=createFixedAmountCondition; window.createNoAmountCondition=createNoAmountCondition; window.createFixedStayDaysCondition=createFixedStayDaysCondition; window.createFixedStayMonthsWithinPeriodCondition=createFixedStayMonthsWithinPeriodCondition; window.createNoStayCondition=createNoStayCondition; window.createFixedBaseCondition=createFixedBaseCondition; window.createPayerBurdenCondition=createPayerBurdenCondition;
+window.treatyData=treatyData; window.getTreatyEntry=getTreatyEntry; window.getDisplayMode=getDisplayMode; window.isVerifiedCountry=isVerifiedCountry; window.canShowRuleDetails=canShowRuleDetails; window.isUnknownCondition=isUnknownCondition; window.isNoCondition=isNoCondition; window.isFixedCondition=isFixedCondition; window.getRuleStatusMessage=getRuleStatusMessage;
+  </script>
+
+  <!-- ============================================================
+       메인 애플리케이션 스크립트
+       ============================================================ -->
+  <script>
+    const countries = [
+      "United States (미국)", "Japan (일본)", "China (중국)", "Germany (독일)", "United Kingdom (영국)",
+      "France (프랑스)", "Canada (캐나다)", "Australia (호주)", "Greece (그리스)", "Norway (노르웨이)",
+      "New Zealand (뉴질랜드)", "Laos (라오스)", "Romania (루마니아)", "Morocco (모로코)", "Mongolia (몽골)",
+      "Vietnam (베트남)", "Belarus (벨라루스)", "Bulgaria (불가리아)", "Serbia (세르비아)", "Sweden (스웨덴)",
+      "Spain (스페인)", "Slovakia (슬로바키아)", "Slovenia (슬로베니아)", "Iceland (아이슬란드)", "Ireland (아일랜드)",
+      "Ethiopia (에티오피아)", "Oman (오만)", "Ukraine (우크라이나)", "Iran (이란)", "Israel (이스라엘)",
+      "Kazakhstan (카자흐스탄)", "Kuwait (쿠웨이트)", "Croatia (크로아티아)", "Kyrgyzstan (키르기즈)", "Tajikistan (타지키스탄)",
+      "Tunisia (튀니지)", "Poland (폴란드)", "Finland (핀란드)", "Hungary (헝가리)", "South Africa (남아공)",
+      "Netherlands (네덜란드)", "Nepal (네팔)", "Taiwan (대만)", "Latvia (라트비아)", "Russia (러시아)",
+      "Luxembourg (룩셈부르크)", "Lithuania (리투아니아)", "Mexico (멕시코)", "Malta (몰타)", "Bangladesh (방글라데시)",
+      "Venezuela (베네수엘라)", "Saudi Arabia (사우디)", "Switzerland (스위스)", "Azerbaijan (아제르바이잔)", "Albania (알바니아)",
+      "Algeria (알제리)", "Estonia (에스토니아)", "Ecuador (에콰도르)", "Austria (오스트리아)", "Jordan (요르단)",
+      "Uzbekistan (우즈베키스탄)", "Egypt (이집트)", "Italy (이탈리아)", "India (인도)", "Indonesia (인도네시아)",
+      "Chile (칠레)", "Kenya (케냐)", "Turkmenistan (투르크메니스탄)", "Peru (페루)", "Portugal (포르투갈)",
+      "Philippines (필리핀)", "Papua New Guinea (파푸아뉴기니)", "Myanmar (미얀마)", "Thailand (태국)", "Pakistan (파키스탄)",
+      "Fiji (피지)", "Malaysia (말레이시아)", "Sri Lanka (스리랑카)", "Denmark (덴마크)", "Belgium (벨기에)",
+      "Turkey (튀르키예)", "Brazil (브라질)", "Singapore (싱가포르)", "UAE (아랍에미리트)", "Czech Republic (체코)",
+      "Hong Kong (홍콩)", "Other (기타 국가)"
+    ];
+
+    const defaultReviewStatement = "Review required. Final tax treatment will be confirmed after review of submitted documents, tax residency, income type, and applicable tax treaty. / 세무 검토가 필요합니다. 최종 세무 처리는 제출서류, 세법상 거주지국, 소득유형 및 적용 가능한 조세조약 검토 후 확정됩니다.";
+
+    function parseMarkdownToHtmlLocal(markdown) {
+      if (!markdown) return "";
+      let escaped = markdown.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+      return escaped.replace(/\*\*(.*?)\*\*/g,"<strong class='font-semibold text-gray-950'>$1</strong>").replace(/\n/g,"<br>");
+    }
+
+    let currentPath=null, currentStepIndex=0, answers={}, activePathSteps=[];
+
+    const pathBases = {
+      1: {
+        categoryName:"Short-term Invitee (단기 초청자)",
+        steps:[
+          { key:"isKoreanResident", title:"Are you currently residing in Korea?", subtitle:"현재 한국에 체류/거주 중이신가요?", type:"choice", options:[{label:"No, I am traveling to Korea for this short visit. / 아니오, 이번 단기 방문을 위해 한국에 입국합니다.",value:"no"},{label:"Yes, I am already staying/residing in Korea. / 예, 이미 한국에 체류하거나 거주 중입니다.",value:"yes"}] },
+          { key:"countryOfTax", title:"What is your country of tax residence?", subtitle:"세법상 거주지국은 어디입니까? (국적이 아닌 실제 세금 납부 국가 기준)", type:"searchable_country" },
+          { key:"paymentType", title:"What is the nature of the payment?", subtitle:"지급받는 대가의 성격은 무엇입니까?", type:"choice", options:[{label:"Lecture Fee / 강연료",value:"lecture_fee"},{label:"Advisory Fee / 자문료",value:"advisory_fee"},{label:"Evaluation/Review Fee / 심사료",value:"review_fee"},{label:"Conference Allowance / 회의참석 수당",value:"conference_allowance"}] },
+          { key:"purposeOfStay", title:"What is the main purpose of your stay?", subtitle:"한국 체류의 주된 목적은 무엇입니까?", type:"choice", options:[{label:"Simple Lecture/Seminar / 단순 강연 및 세미나 발표",value:"simple_lecture"},{label:"Collaborative Research Execution / 공동 연구 수행",value:"research_collaboration"},{label:"Long-term Employment-like role / 장기 고용 유사 역할 수행",value:"employment_like"}] },
+          { key:"stayDays", title:"Expected total stay in Korea during the current calendar year?", subtitle:"올해 귀하의 한국 체류 총 예정 일수는 어떻게 됩니까?", type:"choice", options:[{label:"Less than 183 days / 183일 미만",value:"under_183"},{label:"183 days or more / 183일 이상",value:"over_183"}] },
+          { key:"paymentAmount", title:"Total expected remuneration/payment for this service?", subtitle:"이번 인적용역 제공에 따라 수령하게 될 총 예상 금액은 대략 얼마입니까?", type:"choice", options:[{label:"Under USD $3,000 (or equivalent) / 미화 3,000불 미만 상당",value:"under_3000"},{label:"USD $3,000 or more / 미화 3,000불 이상 상당",value:"over_3000"}] },
+          { key:"fixedBase", title:"Do you have a domestic fixed base or provide repeated services?", subtitle:"국내에 고정시설(연구실/사무실 등)이 있거나 반복적으로 용역을 제공하십니까?", type:"choice", options:[{label:"No, temporary single event / 아니오, 일시적이고 단발성인 행사입니다.",value:"no_fixed_base"},{label:"Yes, assigned office/lab or repeated visits / 예, 전용 연구실/사무실이 있거나 반복 방문하여 제공합니다.",value:"has_fixed_base"}] },
+          { key:"otherPayments", title:"Do you expect other payments from Korea this year?", subtitle:"올해 한국 내 타 학과 혹은 타 기관에서 지급 예정인 소득이 있습니까?", type:"choice", options:[{label:"No other payments / 올해 한국 내 다른 소득 없음",value:"no_other_payments"},{label:"Yes, scheduled for payments from others / 예, 타 학과나 외부 기관 지급 예정 소득이 있음",value:"has_other_payments"}] },
+          { key:"canSubmitCert", title:"Do you wish to submit tax exemption documents?", subtitle:"비과세 서류(거주자증명서 원본 등)를 구비하여 조세조약 비과세 면제 신청을 희망하십니까?", type:"choice", options:[{label:"Yes, I want to apply for exemption. / 예, 거주자증명서 등을 제출하여 비과세 신청을 진행하겠습니다.",value:"yes"},{label:"No, please apply standard withholding. / 아니오, 서류 제출 없이 표준 원천징수 후 잔액 지급을 원합니다.",value:"no"}] }
+        ]
+      },
+      2: {
+        categoryName:"Prospective Researcher (채용 예정 비전임 연구자)",
+        steps:[
+          { key:"employmentContract", title:"Will you sign a formal full-time employment contract with POSTECH?", subtitle:"포스텍과 정식 근로계약(임용)을 체결하시나요?", type:"choice", options:[{label:"Yes, I will sign a formal employment contract. / 예, 공식 근로 계약을 체결합니다.",value:"yes"},{label:"No, it is an informal research collaboration or internship. / 아니오, 비공식 연구 협력 또는 인턴십 과정입니다.",value:"no"}] },
+          { key:"stayDuration", title:"What is your expected duration of stay in Korea?", subtitle:"예상되는 한국 체류 기간은 어느 정도입니까?", type:"choice", options:[{label:"Less than 183 days (Short-term) / 183일 미만 (단기 체류)",value:"short"},{label:"183 days or more (Long-term) / 183일 이상 (장기 거주)",value:"long"}] }
+        ]
+      },
+      3: {
+        categoryName:"Visiting Scholar / Professor (교원·석학교원 후보자)",
+        steps:[
+          { key:"isPaid", title:"Is this visit paid by POSTECH?", subtitle:"포스텍으로부터 급여, 연구 자문료 또는 정기 체재비 등을 지원받으시나요?", type:"choice", options:[{label:"Yes, I will receive a salary or visiting allowance. / 예, 정기 급여나 초빙 수당을 수령합니다.",value:"paid"},{label:"No, it is unpaid (Self-funded or external scholarship). / 아니오, 무급 방문입니다. (자체 재원 또는 외부 지원)",value:"unpaid"}] },
+          { key:"stayDuration", title:"What is your continuous stay duration planned for POSTECH?", subtitle:"초빙/방문 예정 기간은 어느 정도입니까?", type:"choice", options:[{label:"Under 90 days / 90일 미만",value:"short"},{label:"90 days up to 1 year / 90일 이상 1년 미만",value:"medium"},{label:"More than 1 year / 1년 이상",value:"long"}] },
+          { key:"canSubmitCert", title:"Can you provide a formal Certificate of Residence from your home country?", subtitle:"조세조약 면제 신청을 위해 본국 거주자증명서(Certificate of Residence) 제출이 가능하십니까?", type:"choice", options:[{label:"Yes, I can obtain and submit it. / 예, 본국 정부기관에서 발행한 증명서를 제출할 수 있습니다.",value:"yes"},{label:"No / Unsure (아니오 / 확실하지 않음)",value:"no"}] }
+        ]
+      },
+      4: {
+        categoryName:"Already Residing in Korea (장기 체류 외국인)",
+        steps:[
+          { key:"hasARC", title:"Do you possess a valid Alien Registration Card (ARC)?", subtitle:"외국인등록증(ARC) 또는 국내거소신고증을 소지하고 계십니까?", type:"choice", options:[{label:"Yes, I have an active ARC. / 예, 유효한 외국인등록증을 소지 중입니다.",value:"yes"},{label:"No, I am waiting for it or on a temporary tourist visa. / 아니오, 발급을 대기 중이거나 임시 비자 상태입니다.",value:"no"}] },
+          { key:"incomeType", title:"What is the primary nature of the payment you will receive?", subtitle:"지급받게 될 주된 소득의 성격은 무엇입니까?", type:"choice", options:[{label:"Regular Salary (급여소득)",value:"salary"},{label:"Advisory, evaluation, or lecture fee (자문/심사/강연료 등 인적용역)",value:"independent"},{label:"Scholarship, stipend, or student grant (장학금/연구보조금)",value:"stipend"}] },
+          { key:"koreanProperty", title:"Do you own real estate, have a long-term lease (Jeonse), or family residing in Korea?", subtitle:"국내에 생계를 같이하는 가족이 있거나 주거(주택, 전세 등)를 마련하고 있습니까?", type:"choice", options:[{label:"Yes, I have established local living arrangements. / 예, 국내에 주거 및 가족 생계 기반이 마련되어 있습니다.",value:"yes"},{label:"No, temporary living arrangements only. / 아니오, 임시 숙소 형태의 주거만 존재합니다.",value:"no"}] }
+        ]
+      }
+    };
+
+    function showCustomAlert(message) { document.getElementById('alertModalText').innerText=message; document.getElementById('alertModal').classList.remove('hidden'); }
+    function closeAlertModal() { document.getElementById('alertModal').classList.add('hidden'); }
+
+    function startWizard(pathId) { currentPath=pathId; currentStepIndex=0; answers={}; activePathSteps=[...pathBases[pathId].steps]; document.getElementById('screen-welcome').classList.add('hidden'); document.getElementById('screen-questions').classList.remove('hidden'); document.getElementById('progressContainer').classList.remove('hidden'); renderStep(); }
+
+    function renderStep() {
+      const categoryName=pathBases[currentPath].categoryName, step=activePathSteps[currentStepIndex], totalSteps=activePathSteps.length, progressPercent=Math.round((currentStepIndex/totalSteps)*100);
+      document.getElementById('progressPercent').innerText=`${progressPercent}%`;
+      document.getElementById('progressBar').style.width=`${progressPercent}%`;
+      document.getElementById('progressText').innerText=`Step ${currentStepIndex+1} of ${totalSteps} - ${categoryName}`;
+      document.getElementById('questionCategory').innerText=categoryName;
+      document.getElementById('questionTitle').innerText=step.title;
+      document.getElementById('questionSubtitle').innerText=step.subtitle;
+      const container=document.getElementById('optionsContainer'); container.innerHTML='';
+      if (step.type==='choice') {
+        step.options.forEach(opt => {
+          const btn=document.createElement('button');
+          btn.className="w-full text-left p-4 border border-gray-200 hover:border-postech hover:bg-postech-light/10 rounded-xl transition-all duration-150 font-medium text-xs flex items-center justify-between group";
+          btn.innerHTML=`<span>${opt.label}</span><span class="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center group-hover:border-postech group-hover:bg-postech shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-white hidden group-hover:block"></span></span>`;
+          btn.onclick=()=>selectAnswer(step.key,opt.value); container.appendChild(btn);
+        });
+      } else if (step.type==='searchable_country') {
+        const wrapper=document.createElement('div'); wrapper.className="space-y-4 relative";
+        wrapper.innerHTML=`<div class="relative"><input type="text" id="countrySearch" placeholder="Search tax residence (e.g. United States, 독일, 일본...)" class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-postech text-xs font-medium"><div class="absolute right-4 top-4 text-gray-400"><i class="fa-solid fa-magnifying-glass"></i></div></div><div class="text-[11px] text-gray-400 font-medium px-1 leading-relaxed">* Selecting a country does not automatically confirm treaty eligibility.<br><span class="text-gray-400/80">* 국가 선택만으로 조세조약상 비과세 적용이 확정되는 것은 아닙니다.</span></div><div id="autocompleteResults" class="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg z-50 hidden custom-scrollbar"></div>`;
+        container.appendChild(wrapper);
+        const searchInput=document.getElementById('countrySearch'), resultsDiv=document.getElementById('autocompleteResults');
+        const filterCountries=()=>{ const term=searchInput.value.toLowerCase(); resultsDiv.innerHTML=''; if(!term){resultsDiv.classList.add('hidden');return;} let matches=0; countries.forEach(cn=>{if(cn.toLowerCase().includes(term)){matches++;const item=document.createElement('div');item.className="p-3 hover:bg-postech-light/20 cursor-pointer text-xs font-medium text-gray-700 border-b border-gray-50 last:border-0";item.innerHTML=cn;item.onclick=()=>{searchInput.value=cn;resultsDiv.classList.add('hidden');selectAnswer('countryOfTax',cn);};resultsDiv.appendChild(item);}}); if(matches>0){resultsDiv.classList.remove('hidden');}else{const noRes=document.createElement('div');noRes.className="p-3 text-xs text-gray-400";noRes.innerText="Setting manual input country / 기타 국가 및 직접 입력";noRes.onclick=()=>{resultsDiv.classList.add('hidden');selectAnswer('countryOfTax',searchInput.value||"Other / 기타");};resultsDiv.appendChild(noRes);resultsDiv.classList.remove('hidden');} };
+        searchInput.oninput=filterCountries; searchInput.onfocus=filterCountries;
+        document.onclick=(e)=>{if(!wrapper.contains(e.target))resultsDiv.classList.add('hidden');};
+      }
+    }
+
+    function selectAnswer(key,value) {
+      answers[key]=value;
+      if (currentStepIndex+1<activePathSteps.length) { currentStepIndex++; renderStep(); }
+      else { document.getElementById('screen-questions').classList.add('hidden'); document.getElementById('progressContainer').classList.add('hidden'); document.getElementById('screen-loading').classList.remove('hidden'); setTimeout(()=>{ processWithAIOnyx(); },800); }
+    }
+
+    function goBack() { if(currentStepIndex>0){currentStepIndex--;renderStep();}else{resetWizard();} }
+
+    function resetWizard() {
+      currentPath=null; currentStepIndex=0; answers={}; activePathSteps=[];
+      document.getElementById('screen-welcome').classList.remove('hidden');
+      ['screen-questions','screen-loading','screen-result','progressContainer'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+      document.getElementById('taxConsentCheckbox').checked=false;
+      document.getElementById('accordionContent').classList.add('hidden');
+      document.getElementById('accordionIcon').className="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200";
+    }
+
+    function handlePrint() { if(!document.getElementById('taxConsentCheckbox').checked){showCustomAlert("Please check the tax treatment confirmation box before printing/saving. / 인쇄 및 보관 전에 하단 원천징수 확인 및 동의 체크박스에 체크해 주세요.");return;} window.print(); }
+
+    function toggleAccordion() { const c=document.getElementById('accordionContent'),i=document.getElementById('accordionIcon'); if(c.classList.contains('hidden')){c.classList.remove('hidden');i.className="fa-solid fa-chevron-up text-gray-400 transition-transform duration-200";}else{c.classList.add('hidden');i.className="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200";} }
+
+    function processWithAIOnyx() {
+      const resTaxStatusEl=document.getElementById('resTaxStatus'), resIncomeTypeEl=document.getElementById('resIncomeType'), resTaxTreatmentEl=document.getElementById('resTaxTreatment'), resVisaNoteEl=document.getElementById('resVisaNote'), resWhyTextEl=document.getElementById('resWhyText'), resDocumentsListEl=document.getElementById('resDocumentsList'), nextStepTextEl=document.getElementById('resNextStepText'), consentLabelEl=document.getElementById('taxConsentLabel'), checklistArea=document.getElementById('treatyChecklistArea'), checklistContainer=document.getElementById('treatyChecklistContainer');
+      resDocumentsListEl.innerHTML=''; checklistContainer.innerHTML=''; checklistArea.classList.add('hidden');
+      let countryKey=answers.countryOfTax||"Other (기타 국가)", cleanCountryName=countryKey.split(' (')[0].trim();
+      const entry=window.getTreatyEntry(cleanCountryName), displayMode=window.getDisplayMode(cleanCountryName), ruleStatusMsg=window.getRuleStatusMessage(cleanCountryName);
+      const statusCard=document.getElementById('treatyStatusCard'), statusIcon=document.getElementById('treatyStatusIcon'), statusTitle=document.getElementById('treatyStatusTitle'), statusDesc=document.getElementById('treatyStatusDesc');
+      statusCard.classList.remove('hidden');
+      if(ruleStatusMsg.level==="success"){statusCard.className="p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-900 flex gap-3.5 items-start";statusIcon.className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0";statusIcon.innerHTML=`<i class="fa-solid fa-circle-check"></i>`;}
+      else if(ruleStatusMsg.level==="danger"){statusCard.className="p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-900 flex gap-3.5 items-start";statusIcon.className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0";statusIcon.innerHTML=`<i class="fa-solid fa-circle-xmark"></i>`;}
+      else{statusCard.className="p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 flex gap-3.5 items-start";statusIcon.className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0";statusIcon.innerHTML=`<i class="fa-solid fa-triangle-exclamation"></i>`;}
+      statusTitle.innerText=`${ruleStatusMsg.titleKo} / ${ruleStatusMsg.titleEn}`;
+      statusDesc.innerText=`${ruleStatusMsg.messageKo}\n${ruleStatusMsg.messageEn}`;
+      let docs=["Copy of Passport (여권 사본)"], expectedTreatment="", whyReasonText="", nextStepStr="", whyExplain="";
+
+      if(currentPath===1){
+        resTaxStatusEl.innerText=answers.isKoreanResident==='yes'?"Resident (국내 거주자)":"Non-Resident (비거주자)";
+        const typeLabels={"lecture_fee":"Lecture Fee / 강연료","advisory_fee":"Advisory Fee / 자문료","review_fee":"Evaluation & Review Fee / 심사료","conference_allowance":"Conference Allowance / 회의참석 수당"};
+        resIncomeTypeEl.innerText=typeLabels[answers.paymentType]||"Independent Personal Service (독립적 인적용역)";
+        if(answers.isKoreanResident==='yes'){
+          expectedTreatment="Withholding tax may apply / 원천징수세가 적용될 수 있음 (국내 프리랜서 3.3% 과세 기준)";
+          whyReasonText="귀하는 국내 거주 중인 상태를 선택하셨으므로, 국내 소득세법(거주자 사업소득 원천징수)이 우선 적용됩니다. / Standard resident freelance withholding tax (3.3%) applies.";
+          docs.push("ARC Copy (외국인등록증 사본)","Korean Bank Account Copy (국내 은행 계좌 사본)");
+          nextStepStr="인사/학과 행정팀의 서류 확인 후 국내 거주자 기준 정산 프로세스가 활성화됩니다. / Final payment process will be validated as a domestic resident after the administrator's review.";
+          consentLabelEl.innerHTML=`<strong>I understand</strong> that final tax treatment, payroll withholding, and required documents will be confirmed after HR/department review.<br><span class="text-gray-500">최종 세무 처리, 급여 원천징수 및 제출 서류는 인사팀 및 학과 행정팀의 최종 검토 후 확정됨을 확인하고 이에 동의합니다.</span>`;
+          resWhyTextEl.innerHTML=parseMarkdownToHtmlLocal(whyReasonText);
+        } else {
+          if(answers.canSubmitCert==='no'){
+            expectedTreatment="Withholding tax may apply / 원천징수세가 적용될 수 있음 (서류 미비로 인한 비거주자 22% 원천징수)";
+            whyReasonText="거주자증명서 원본 제출을 희망하지 않으셨습니다. 비거주자 제한세율(22%)이 적용됩니다. / Certificate of Residence not submitted. Standard non-resident withholding tax of 22% will apply.";
+            docs.push("Korean or Foreign Bank Account Details (지급 영수증용 계좌 정보 사본)");
+            nextStepStr="원천징수 후 차액 지급 프로세스로 진행됩니다. / Net payment will be processed after the withholding of taxes.";
+            consentLabelEl.innerHTML=`<strong>I understand</strong> that withholding tax may be deducted from my payment based on the preliminary assessment.<br><span class="text-gray-500">본 예비 진단 결과에 따라 대가 지급 시 원천징수세가 공제될 수 있으며, 최종 과세 방식은 검토를 거쳐 확정됨을 확인하고 이에 동의합니다.</span>`;
+            resWhyTextEl.innerHTML=parseMarkdownToHtmlLocal(whyReasonText);
+          } else {
+            if(entry.meta.hasTreaty===false){
+              expectedTreatment="Withholding tax may apply / 원천징수세가 적용될 수 있음 (조세조약 미체결국)";
+              whyReasonText="선택하신 국가는 대한민국과 조세조약이 체결되지 않은 국가입니다. / The selected country does not have an active tax treaty with South Korea.";
+              docs.push("Foreign Bank Account Details (해외 송금용 계좌 사본)");
+              nextStepStr="원천징수 후 차액 지급 프로세스로 정산이 진행됩니다. / Withholding tax (22%) is expected to apply.";
+              consentLabelEl.innerHTML=`<strong>I understand</strong> that withholding tax may be deducted from my payment based on the preliminary assessment.<br><span class="text-gray-500">본 예비 진단 결과에 따라 대가 지급 시 원천징수세가 공제될 수 있음을 확인하고 이에 동의합니다.</span>`;
+              resWhyTextEl.innerHTML=parseMarkdownToHtmlLocal(whyReasonText);
+            } else {
+              let isTaxed=false, ruleReasonEn="", ruleReasonKo="", checkListHTML="";
+              if(displayMode==="show_full"&&window.isVerifiedCountry(cleanCountryName)){
+                const ip=entry.independentPersonalServices;
+                let amountPass=true, stayPass=true, fixedBasePass=answers.fixedBase==='no_fixed_base', otherPaymentsPass=answers.otherPayments==='no_other_payments';
+                if(ip.amountCondition.conditionType===CONDITION_TYPE.FIXED&&ip.amountCondition.amountBasisType===AMOUNT_BASIS_TYPE.MONETARY_THRESHOLD){if(ip.amountCondition.threshold===3000){amountPass=answers.paymentAmount==='under_3000';}}
+                if(ip.stayCondition.conditionType===CONDITION_TYPE.FIXED&&ip.stayCondition.stayBasisType===STAY_BASIS_TYPE.DAYS){if(ip.stayCondition.threshold===183){stayPass=answers.stayDays==='under_183';}}
+                if(!amountPass||!stayPass||!fixedBasePass) isTaxed=true;
+                const createCheckItemHTML=(titleKo,titleEn,isPassed,detailsKo,detailsEn)=>`<div class="flex items-start justify-between border-b border-gray-100 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0"><div><span class="font-bold text-gray-800">${titleKo} <span class="text-[10px] text-gray-400 font-normal">(${titleEn})</span></span><p class="text-[11px] text-gray-500 mt-0.5">${detailsKo} / ${detailsEn}</p></div><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${isPassed?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}">${isPassed?'<i class="fa-solid fa-circle-check mr-1"></i> Pass / 충족':'<i class="fa-solid fa-circle-exclamation mr-1"></i> Warning / 초과 우려'}</span></div>`;
+                checkListHTML+=createCheckItemHTML("소득 금액 요건","Remuneration Threshold",amountPass,ip.amountCondition.displayTextKo,ip.amountCondition.displayTextEn);
+                checkListHTML+=createCheckItemHTML("한국 체류 기간 요건","Stay Duration Limit",stayPass,ip.stayCondition.displayTextKo,ip.stayCondition.displayTextEn);
+                checkListHTML+=createCheckItemHTML("국내 고정시설 미소유 요건","No Fixed Base in Korea",fixedBasePass,ip.fixedBaseCondition.displayTextKo,ip.fixedBaseCondition.displayTextEn);
+                if(!otherPaymentsPass){checkListHTML+=createCheckItemHTML("타 학과/기관 중복 정산 여부","Multiple Local Payments",false,"올해 한국 내 타 기관의 추가 정산 예정 소득이 존재함","Active payments from multiple local sources exist");}
+                checklistContainer.innerHTML=checkListHTML; checklistArea.classList.remove('hidden');
+                if(isTaxed){ruleReasonEn="Some verified treaty conditions have been potentially violated.";ruleReasonKo="담당자가 검증한 조세조약상 세부 조항 요건 중 일부를 준수하지 못해 비과세 혜택에서 배제될 우려가 높습니다.";}
+                else{ruleReasonEn="Exempt because stay is within verified limits, compensation is under thresholds, and no fixed base is maintained.";ruleReasonKo="체류기간 한도, 수령 대가 임계치 요건을 모두 충족하였으며 국내에 고정시설을 보유하고 있지 않으므로 조세조약 면제 조건에 부합합니다.";}
+              } else {
+                ruleReasonEn=`Detailed treaty provisions for [${cleanCountryName}] require manual review of the official treaty text.`;
+                ruleReasonKo=`선택하신 국가 [${cleanCountryName}]의 상세 조건 데이터베이스가 아직 대조 전이거나 검토 상태입니다. 국세청 원문 및 조약 조항 조회를 통해 최종 비과세 적격 여부를 수동 판별하여야 합니다.`;
+              }
+              if(isTaxed){
+                expectedTreatment="Withholding tax may apply / 원천징수세가 적용될 수 있음 (조세조약상 비과세 기준 초과 가능성)";
+                docs=["Copy of Passport (여권 사본)","Foreign Bank Account Copy (해외 송금용 계좌 사본)"];
+                nextStepStr="세법 조항 요건 미달 우려로 원천징수세율(22%) 공제 처리 대상이 될 수 있습니다. / Withholding tax (22%) is expected to apply due to threshold limits.";
+                consentLabelEl.innerHTML=`<strong>I understand</strong> that withholding tax may be deducted from my payment based on the preliminary assessment.<br><span class="text-gray-500">본 예비 진단 결과에 따라 대가 지급 시 원천징수세가 공제될 수 있으며, 최종 과세 방식은 학과 및 재무팀의 검토를 거쳐 확정됨을 확인하고 이에 동의합니다.</span>`;
+              } else {
+                expectedTreatment="Tax Treaty Exemption Review May Be Available / 조세조약상 비과세 검토 가능 (최종 검토 필요)";
+                docs=["Copy of Passport (여권 사본)","Original Certificate of Residence (본국 국세청 발행 거주자증명서 원본)","Application for Tax Exemption (비과세·면제신청서)"];
+                nextStepStr="조세조약상 비과세 검토 가능 대상입니다! 본국 국세청에서 발급한 공식 거주자증명서 원본과 비과세·면제신청서 작성이 수반되어야 합니다. / Highly eligible for treaty exemption review. Submit original Certificate of Residence.";
+                consentLabelEl.innerHTML=`<strong>I understand</strong> that withholding tax may be deducted if I do not submit the required documents for tax treaty exemption.<br><span class="text-gray-500">조세조약상 비과세 적용에 필요한 필수 증빙 서류를 최종 제출하지 않는 경우, 원천징수 세율에 따라 세금이 공제된 후 대가가 지급될 수 있음을 확인하고 동의합니다.</span>`;
+              }
+              whyExplain=`Under the bilateral tax treaty with ${entry.meta.enName}: ${ruleReasonEn} (한-${cleanCountryName} 조세조약 기준: ${ruleReasonKo})`;
+              resWhyTextEl.innerHTML=parseMarkdownToHtmlLocal(whyExplain);
+            }
+          }
+        }
+      } else if(currentPath===2){
+        resTaxStatusEl.innerText=answers.stayDuration==='long'?"Resident (세법상 거주자 예정)":"Non-Resident (비거주자 예정)";
+        resIncomeTypeEl.innerText="Salary / Regular Labor Income (근로소득)";
+        consentLabelEl.innerHTML=`<strong>I understand</strong> that final tax treatment, payroll withholding, and required documents will be confirmed after HR/department review.<br><span class="text-gray-500">최종 세무 처리, 급여 원천징수 및 제출 서류는 인사팀 및 학과 행정팀의 최종 검토 후 확정됨을 확인하고 이에 동의합니다.</span>`;
+        expectedTreatment="Payroll Tax Withholding & Year-End Tax Settlement / 정기 급여 원천세 공제 및 연말정산 프로세스 적용";
+        whyReasonText="포스텍과 정식 고용 계약을 체결하여 연구 활동을 수행하는 경우, 소득세법에 따라 월별 급여 지급 시 소득세가 원천징수되며, 다음 연도 초 연말정산 대상이 됩니다. / Formal employment contract. Regular labor income tax brackets apply with annual year-end settlement.";
+        docs.push("Copy of Passport (여권 사본)","Alien Registration Card (ARC) Copy (외국인등록증 사본)","Korean Bank Account Passbook Copy (국내 계좌 통장 사본)","Certificate of Degree (학위 증빙 사본)");
+        nextStepStr="학과 임용 담당 행정원과 임용 및 정기 급여 지급 일정을 맞추어 필요한 서류 패키지를 지체 없이 제출하십시오. / Coordinate with your hiring coordinator to complete the onboarding and payroll document packages.";
+        resWhyTextEl.innerHTML=parseMarkdownToHtmlLocal(whyReasonText);
+      } else if(currentPath===3){
+        resTaxStatusEl.innerText=answers.stayDuration==='short'?"Non-Resident (비거주자 예정)":"Resident (세법상 거주자 예정)";
+        resIncomeTypeEl.innerText="Visiting Allowance / Professor Salary (초빙 교원 급여 / 연구 수당)";
+        if(answers.isPaid==='unpaid'){
+          expectedTreatment="No Tax Liability / 세금 발생 안 함 (포스텍 지급액 없음)";
+          whyReasonText="포스텍으로부터 금전적인 정산 지급액을 전혀 수령하지 않는 무급 방문이므로 국내에서 정산할 세금이 없습니다. / Unpaid academic visitor with zero local compensation — no income tax liabilities in Korea.";
+          docs.push("Copy of Passport (여권 사본)","Certificate of Current Affiliation (소속 기관 재직/재학 증명서)");
+          nextStepStr="금전 지급은 없으나 학과 및 대학 출입 통제 등 신분 등록을 위해 기본 서류 제출이 완료되어야 합니다. / Basic identity registration required for facility access.";
+          consentLabelEl.innerHTML=`<strong>I understand</strong> that final tax treatment and required documents will be confirmed after HR/department review.<br><span class="text-gray-500">최종 세무 처리 및 제출 서류는 학과 행정팀의 최종 검토 후 확정됨을 확인하고 이에 동의합니다.</span>`;
+        } else {
+          if(answers.canSubmitCert==='yes'){
+            expectedTreatment="Tax Treaty Exemption Review May Be Available / 조세조약상 비과세 검토 가능 (교직원/교수 비과세 특례 심사 대상)";
+            whyReasonText="많은 국가의 조세조약에는 2년 한도의 교직원(Teachers/Researchers) 면세 특례 조항이 있으므로 이의 적용 가능성을 확인하기 위한 수동 심사 대상이 됩니다. / Many tax treaties offer a 2-year tax exemption for teaching/research.";
+            docs.push("Original Certificate of Residence (거주자증명서 원본)","Application for Tax Exemption for Teachers (교직원 비과세 면제신청서)","Appointment or Invitation Letter Copy (초빙계약서 또는 임용 증빙)");
+            nextStepStr="본국 발행 거주자증명서와 비과세신청서를 학과 담당자에게 즉시 제출하여 면세 혜택 적격 여부에 대한 심사를 개시해 주십시오. / Submit original Certificate of Residence to initialize professor exemption assessment.";
+            consentLabelEl.innerHTML=`<strong>I understand</strong> that withholding tax may be deducted if I do not submit the required documents for tax treaty exemption.<br><span class="text-gray-500">조세조약상 비과세 적용에 필요한 필수 증빙 서류를 최종 제출하지 않는 경우, 원천징수 세율에 따라 세금이 공제됨을 확인하고 동의합니다.</span>`;
+          } else {
+            expectedTreatment="Standard Payroll Withholding / 일반 근로 또는 원천세 간이공제 적용 가능";
+            whyReasonText="거주자증명서 제출이 불가능하므로, 일반 원천세 규정에 맞춰 과세 처리될 수 있습니다. / Standard monthly payroll withholding will be applied.";
+            docs.push("Copy of Passport (여권 사본)","Korean Bank Account Copy (국내 계좌 사본)");
+            nextStepStr="증빙 미제출 시 국내 표준 원천세율이 일괄 적용되어 공제됩니다. / Standard local tax rates will apply if required certificates are not submitted.";
+            consentLabelEl.innerHTML=`<strong>I understand</strong> that final tax treatment will be confirmed after HR/department review.<br><span class="text-gray-500">최종 세무 처리는 학과 행정팀의 최종 검토 후 확정됨을 확인하고 이에 동의합니다.</span>`;
+          }
+        }
+        resWhyTextEl.innerHTML=parseMarkdownToHtmlLocal(whyReasonText);
+      } else if(currentPath===4){
+        resTaxStatusEl.innerText=(answers.hasARC==='yes'||answers.koreanProperty==='yes')?"Resident (세법상 국내 거주자)":"Non-Resident (비거주자)";
+        const typeLabels={"salary":"Regular Salary (근로소득)","independent":"Freelance Consulting Fee (인적용역 사업소득)","stipend":"Scholarship / Student Stipend (장학금 / 학업 보조 소득)"};
+        resIncomeTypeEl.innerText=typeLabels[answers.incomeType]||"General Resident Income (기타 국내 거주 외국인 소득)";
+        consentLabelEl.innerHTML=`<strong>I understand</strong> that final tax treatment and required documents will be confirmed after HR/department review.<br><span class="text-gray-500">최종 세무 처리 및 제출 서류는 인사팀 및 학과 행정팀의 최종 검토 후 확정됨을 확인하고 이에 동의합니다.</span>`;
+        if(answers.incomeType==='salary'){
+          expectedTreatment="Payroll Tax Withholding & Year-End Tax Settlement / 근로소득 간이징수 및 정기 연말정산";
+          whyReasonText="국내 유효한 ARC를 보유하고 거주 요건을 충족한 정기 급여 수령자입니다. 일반 한국 근로자와 동일한 소득세 징수 테이블과 연말정산이 적용됩니다. / Resident earning regular salaries — standard local labor taxes and year-end tax settlements apply.";
+          docs.push("Alien Registration Card (ARC) Copy (외국인등록증 사본)","Korean Bank Account Copy (국내 은행 계좌 사본)");
+          nextStepStr="인사/학과 행정팀의 가이드에 따라 급여 및 보험 정산 서류 제출을 완료해 주십시오. / Keep your details up-to-date for payroll processing.";
+        } else if(answers.incomeType==='independent'){
+          expectedTreatment="Withholding tax may apply / 원천징수세가 적용될 수 있음 (거주자 인적용역 3.3% 정산)";
+          whyReasonText="이미 국내 등록을 마치고 단발성 인적용역(강연/자문 등)에 응하는 거주자이므로, 프리랜서 사업소득 원천세율 3.3%(지방소득세 포함) 공제 대상입니다. / Resident providing independent services — standard freelance withholding (3.3%) applies.";
+          docs.push("ARC Copy (외국인등록증 사본)","Korean Bank Account Copy (국내 계좌 사본)","Consulting/Lecture Log (강연 확인서)");
+          nextStepStr="서류 제출 후 정산 시 세액 3.3% 공제 처리가 즉시 이행됩니다. / Standard 3.3% will be withheld from your payment.";
+        } else {
+          expectedTreatment="Tax-Exempt or Excluded Under Student Tax Codes / 학생 장학 특별 세칙에 따른 비과세 적용";
+          whyReasonText="국내 외국인 학생 및 연구원이 수령하는 공식 학자금이나 연구 장학 보조금은 법정 세제 혜택에 따른 비과세 처리 대상입니다. / Stipends and school fellowships are protected under educational tax exemption rules.";
+          docs.push("ARC Copy (외국인등록증 사본)","Certificate of Enrollment (재학/연구원 등록 증명서)","Korean Bank Account Copy");
+          nextStepStr="학과 학생 등록 정산 시스템에 신분증과 계좌번호가 정확히 등록되어 있는지 확인하십시오. / Ensure your registration is complete under the school scholarship system.";
+        }
+        resWhyTextEl.innerHTML=parseMarkdownToHtmlLocal(whyReasonText);
+      }
+
+      resTaxTreatmentEl.innerText=expectedTreatment;
+      resVisaNoteEl.innerText="Visa eligibility must be confirmed by the International Office or the relevant immigration authority. / 비자 가능 여부는 대학 국제팀 또는 출입국 사무소를 통해 최종 확인이 필요합니다.";
+      nextStepTextEl.innerText=nextStepStr;
+      docs.forEach(doc=>{const li=document.createElement('li');li.className="flex items-start gap-2 text-[11px] text-gray-700 font-medium";li.innerHTML=`<span class="text-postech font-bold shrink-0">&bull;</span><span>${doc}</span>`;resDocumentsListEl.appendChild(li);});
+      document.getElementById('screen-loading').classList.add('hidden');
+      document.getElementById('screen-result').classList.remove('hidden');
+    }
+
+    // AI Co-Pilot
+    const apiKey="";
+    async function fetchGeminiWithRetry(payload,retries=5,delay=1000) {
+      const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      for(let i=0;i<retries;i++){try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(r.ok)return await r.json();}catch(e){} await new Promise(res=>setTimeout(res,delay*Math.pow(2,i)));}
+      throw new Error("Failed to reach NTS database after several attempts.");
+    }
+
+    async function queryAI(customQuery=null) {
+      const inputEl=document.getElementById('aiInput'), queryText=customQuery||inputEl.value.trim();
+      if(!queryText){showCustomAlert("Please enter a tax-related inquiry or choose a preset! / 세금 관련 질문을 입력하거나 우측의 자주 묻는 질문을 선택해주세요!");return;}
+      document.getElementById('aiLoading').classList.remove('hidden'); document.getElementById('aiResponseBox').classList.add('hidden'); document.getElementById('aiSources').classList.add('hidden');
+      const systemPrompt=`You are an administrative AI Tax Co-pilot specialized in Korean Tax Law, bilateral tax treaties, and National Tax Service (NTS) guidelines. Your primary role is to assist the Department of Chemistry at POSTECH in answering questions for international visitors, researchers, and administrators about non-resident taxation, withholding tax, double tax treaties, and required documentation. Guidelines: 1. Base your response on current Korean tax law. 2. Format professionally using markdown bold, bullet points, and Korean & English translations. 3. Never guarantee final exemption. 4. Clearly emphasize that final decisions depend on formal submission and administrator verification.`;
+      const payload={contents:[{parts:[{text:queryText}]}],tools:[{"google_search":{}}],systemInstruction:{parts:[{text:systemPrompt}]}};
+      try{
+        const result=await fetchGeminiWithRetry(payload);
+        const text=result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if(!text) throw new Error("No response returned from the tax engine.");
+        document.getElementById('aiResponseText').innerHTML=parseMarkdownToHtmlLocal(text);
+        const attributions=result.candidates?.[0]?.groundingMetadata?.groundingAttributions;
+        const sourcesContainer=document.getElementById('aiSourcesContainer'); sourcesContainer.innerHTML='';
+        if(attributions&&attributions.length>0){
+          document.getElementById('aiSources').classList.remove('hidden');
+          const seen=new Set();
+          attributions.forEach(attr=>{const uri=attr.web?.uri,title=attr.web?.title||"National Tax Service Record";if(uri&&!seen.has(uri)){seen.add(uri);const badge=document.createElement('a');badge.href=uri;badge.target="_blank";badge.className="inline-flex items-center gap-1 text-[10px] bg-postech-light hover:bg-postech hover:text-white text-postech font-semibold px-2 py-0.5 rounded transition-colors border border-postech/10 shadow-sm";badge.innerHTML=`<i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i> ${title.substring(0,30)}${title.length>30?'...':''}`;sourcesContainer.appendChild(badge);}});
+        }
+        document.getElementById('aiResponseBox').classList.remove('hidden');
+      } catch(error){showCustomAlert(error.message);} finally{document.getElementById('aiLoading').classList.add('hidden');}
+    }
+
+    function askPreset(promptText){document.getElementById('aiInput').value=promptText;queryAI(promptText);}
+  </script>
+</body>
+</html>
