@@ -28,10 +28,37 @@
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #C10042; border-radius: 3px; }
+    
+    /* Direct Deposit Form Custom Print and Display Styles */
+    .dd-page { width:100%; max-width:194mm; min-height:281mm; margin:0 auto; background:white; padding:0; color:#000; font-family:"Noto Sans CJK KR", "Noto Sans KR", Arial, sans-serif; }
+    .dd-h1 { margin:1.5mm 0 0; text-align:center; font-size:18pt; line-height:1.05; font-weight:800; color:#000; }
+    .dd-h2 { margin:0 0 1.5mm; text-align:center; font-size:10pt; line-height:1.0; font-weight:800; color:#000; }
+    .dd-table { border-collapse:collapse; width:100%; table-layout:fixed; border: 0.7px solid #000; margin-top: 1mm; }
+    .dd-table th, .dd-table td { border:0.7px solid #000; padding:1.5mm 1mm; vertical-align:middle; font-size:7.2pt; line-height:1.08; word-break:keep-all; overflow-wrap:break-word; color:#000; }
+    .dd-center { text-align:center; } 
+    .dd-right { text-align:right; }
+    .dd-bold { font-weight:800; }
+    .dd-small { font-size:5.6pt; line-height:1.08; }
+    .dd-tiny { font-size:5.0pt; line-height:1.04; }
+    .dd-gray { background:#f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .dd-yellow { background:#fff2b3 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .dd-pale { background:#fff7cc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .dd-labelko { display:block; font-weight:800; font-size:7.0pt; color:#000; }
+    .dd-labelen { display:block; font-size:5.1pt; line-height:1.0; color:#000; }
+    .dd-instruction { background:#fff2b3 !important; border:1px solid #000; padding:1.1mm 1.6mm; margin-bottom:0.9mm; font-size:6.0pt; line-height:1.15; color:#000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .dd-instruction .en { padding-left:3.2mm; display:block; }
+    .dd-note-ko { font-size:5.5pt; font-weight:700; color:#000; }
+    .dd-note-en { font-size:5.0pt; padding-left:2.8mm; color:#000; }
+    .dd-check { font-size:7.0pt; font-family:Arial, sans-serif; color:#000; }
+    .dd-signature-line { display:inline-block; border-bottom:0.8px solid #000; min-width:35mm; height:4mm; vertical-align:bottom; }
+    .dd-footer { font-size:5.3pt; margin-top:1.2mm; line-height:1.2; color:#555; text-align:left; }
+    .dd-footer .en { padding-left:3.0mm; display:block; }
+
     @media print {
       .no-print { display: none !important; }
       body { background-color: white !important; }
       .print-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+      .page-break-before { page-break-before: always; margin-top: 15mm; }
     }
   </style>
 </head>
@@ -67,6 +94,7 @@
       </div>
     </div>
 
+    <!-- Active Card Frame -->
     <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 md:p-10 transition-all duration-300 min-h-[440px] flex flex-col justify-between print-card">
       
       <!-- Screen 1: Welcome -->
@@ -159,6 +187,7 @@
           <h3 class="text-lg md:text-xl font-extrabold text-gray-900">Your Preliminary Roadmap Is Ready</h3>
           <p class="text-xs text-gray-400">예비 안내서가 준비되었습니다. 학과 서류 검토 및 정산용으로 사용 가능합니다.</p>
         </div>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-100">
             <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 border-b border-gray-200 pb-1.5 flex justify-between"><span>Administrative Profile</span><span>행정 요약</span></h4>
@@ -208,6 +237,33 @@
             <span id="taxConsentLabel" class="text-[11px] text-gray-600 leading-relaxed"></span>
           </label>
         </div>
+
+        <!-- 계좌입금의뢰서 (Direct Deposit Form) Interactive preview section (신설) -->
+        <div id="directDepositSection" class="hidden space-y-4 border border-gray-200 rounded-2xl p-5 md:p-6 bg-white no-print">
+          <div class="border-b border-gray-100 pb-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h4 class="text-sm font-bold text-gray-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-file-invoice-dollar text-postech"></i>
+                Bilingual Direct Deposit Payment Request / 계좌입금의뢰서 작성
+              </h4>
+              <p class="text-[11px] text-gray-500 mt-0.5">Please fill out the highlighted fields. You can export this form in multiple formats. | 노란색 필드를 채우신 후 원하는 포맷으로 바로 정산서류를 내보내기 하실 수 있습니다.</p>
+            </div>
+            <!-- Download / Print Action Bar -->
+            <div class="flex flex-wrap gap-1.5 shrink-0">
+              <button type="button" onclick="exportDirectDeposit('print')" class="px-3 py-2 bg-postech-light text-postech hover:bg-postech hover:text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-print text-sm"></i> Standalone Print / 단독 인쇄
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Interactive Document Form Structure -->
+          <div class="overflow-x-auto border border-gray-100 rounded-xl bg-gray-50 p-3 max-h-[520px] custom-scrollbar">
+            <div class="bg-white p-6 shadow-sm border border-gray-200 rounded-lg min-w-[720px] mx-auto" id="ddInteractiveContainer">
+              <!-- Inline dynamic generation of Direct Deposit Interactive Sheet -->
+            </div>
+          </div>
+        </div>
+
         <div class="bg-amber-50 border border-amber-200/60 p-5 rounded-xl flex gap-3.5 items-start">
           <div class="w-8 h-8 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-triangle-exclamation text-base"></i></div>
           <div>
@@ -223,6 +279,9 @@
       </div>
     </div>
 
+    <!-- Printable Account Request Area Page 2 (Only triggered during print window) -->
+    <div id="ddPrintOnlyContainer" class="hidden print:block page-break-before"></div>
+
     <!-- Alert Modal -->
     <div id="alertModal" class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center hidden no-print">
       <div class="bg-white p-6 rounded-2xl max-w-sm w-full mx-4 shadow-xl border border-gray-100 space-y-4">
@@ -232,44 +291,6 @@
       </div>
     </div>
 
-    <!-- AI Co-Pilot -->
-    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 md:p-10 transition-all duration-300 no-print">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-5">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-postech-light text-postech flex items-center justify-center rounded-xl"><i class="fa-solid fa-robot text-lg"></i></div>
-          <div>
-            <h3 class="font-bold text-gray-900 text-sm md:text-base flex items-center gap-2">POSTECH Chemistry Tax Co-Pilot (AI)<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-2.5 py-0.5 rounded-full">Preliminary AI Reference</span></h3>
-            <p class="text-[11px] text-gray-500">Ask tax-related questions. Reference only. | 국세청, 국세법령정보시스템 및 법제처 공개자료 참고 답변봇</p>
-          </div>
-        </div>
-      </div>
-      <div class="my-5">
-        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">💡 Quick Preset Inquiries / 자주 묻는 질문</span>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="askPreset('독일 거주자 연구원의 교직원/교수 조세조약 비과세 면세 요건은 어떻게 되나요? / Tax treaty exemption requirements for a German resident researcher?')" class="text-[11px] bg-gray-50 hover:bg-postech-light hover:text-postech border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-all text-left">독일 연구자 면세요건 (DE)</button>
-          <button onclick="askPreset('비거주자 독립인적용역 면세 신청 시 국세청(NTS) 거주자증명서(Certificate of Residence) 제출 기한과 유효기간 / Validity of Certificate of Residence for non-residents.')" class="text-[11px] bg-gray-50 hover:bg-postech-light hover:text-postech border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-all text-left">거주자증명서 기한 (Validity)</button>
-          <button onclick="askPreset('미국 거주자 독립인적용역 대가가 연간 3,000불 미만이나 체류일이 183일 초과일 경우의 원천징수 세율 / US independent service under 3k but over 183 days stay.')" class="text-[11px] bg-gray-50 hover:bg-postech-light hover:text-postech border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-all text-left">미국 3,000불 초과 세법 (US)</button>
-        </div>
-      </div>
-      <div class="space-y-4">
-        <div class="flex gap-2">
-          <input type="text" id="aiInput" placeholder="Ask about Korean tax treaties (e.g. 벨기에 거주자 비과세 요건)..." class="flex-1 p-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-postech text-xs font-medium">
-          <button onclick="queryAI()" id="aiSendBtn" class="bg-postech hover:bg-postech-dark text-white px-4 py-3.5 rounded-xl font-bold text-xs shrink-0 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-paper-plane"></i> Ask AI</button>
-        </div>
-        <div id="aiLoading" class="hidden text-center py-8 space-y-2">
-          <div class="inline-block w-6 h-6 border-3 border-postech border-t-transparent rounded-full animate-spin"></div>
-          <p class="text-xs text-gray-500">Searching publicly available tax-related web sources... / 세무 관련 공개 자료 조회 중...</p>
-        </div>
-        <div id="aiResponseBox" class="hidden border border-gray-100 bg-gray-50 rounded-xl p-5 space-y-4">
-          <div class="flex items-center gap-2 text-postech font-bold text-xs uppercase tracking-wider"><i class="fa-solid fa-circle-nodes text-sm"></i> AI-Generated Web Reference Response / 공개 자료 참고 응답</div>
-          <div id="aiResponseText" class="text-xs md:text-sm text-gray-700 leading-relaxed space-y-2 custom-scrollbar max-h-96 overflow-y-auto pr-2"></div>
-          <div id="aiSources" class="border-t border-gray-200/60 pt-3 hidden">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Public Web References Consulted / 참고한 공개 웹 자료</span>
-            <div id="aiSourcesContainer" class="flex flex-wrap gap-2"></div>
-          </div>
-        </div>
-      </div>
-    </div>
   </main>
 
   <footer class="bg-white border-t border-gray-100 py-6 text-center text-[11px] text-gray-400 font-medium">
@@ -306,7 +327,7 @@ function ko이가(name) { if (!name||typeof name!=="string") return "이"; const
 function createUnknownAmountCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, amountBasisType:AMOUNT_BASIS_TYPE.UNKNOWN, threshold:null, currency:null, operator:null, periodBasis:PERIOD_BASIS.TREATY_TEXT_REQUIRED, displayTextKo:"금액 기준은 해당 국가 조세조약 원문 확인 필요", displayTextEn:"Monetary threshold requires review of the applicable treaty text", noteKo:noteKo||"USD 3,000, USD 10,000, USD 12,000 또는 금액 기준 없음 등 국가별로 다를 수 있음", noteEn:noteEn||"The treaty may provide USD 3,000, USD 10,000, USD 12,000, no monetary threshold, or another country-specific rule.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
 function createUnknownStayCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, stayBasisType:STAY_BASIS_TYPE.UNKNOWN, threshold:null, unit:null, operator:null, periodBasis:PERIOD_BASIS.TREATY_TEXT_REQUIRED, displayTextKo:"체류기간 기준은 해당 국가 조세조약 원문 확인 필요", displayTextEn:"Stay-period condition requires review of the applicable treaty text", noteKo:noteKo||"90일, 120일, 183일, 6개월, 365일 중 6개월 초과 등 국가별 기준이 다를 수 있음", noteEn:noteEn||"The treaty may provide 90 days, 120 days, 183 days, 6 months, more than 6 months within 365 days, or another country-specific rule.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
 function createUnknownFixedBaseCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, mustNotHaveFixedBaseInKorea:null, displayTextKo:"한국 내 고정시설 관련 조건은 해당 국가 조세조약 원문 확인 필요", displayTextEn:"Fixed base / fixed place condition requires review of the applicable treaty text", scopeKo:"부동산, 사무소, 연구실, 업무공간, 지점 등 소유·임차·계속 사용 가능한 고정된 장소", scopeEn:"Real estate, office, laboratory, workspace, branch, or other fixed place owned, leased, or regularly used in Korea", noteKo:noteKo||"일회성 강의실·회의실 제공 여부가 아니라, 국내 고정된 장소 보유·임차·계속 사용 여부를 확인해야 함", noteEn:noteEn||"This asks whether the person or affiliated institution has a fixed place in Korea, not whether a temporary lecture room or meeting room is provided.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
-function createUnknownPayerBurdenCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, required:null, appliesTo:[], displayTextKo:"대가 부담 주체 조건은 해당 국가 조세조약 원문 확인 필요", displayTextEn:"Payer-burden condition requires review of the applicable treaty text", noteKo:noteKo||"대가를 국내 거주자, 국내 법인, 국내 고정사업장 또는 고정시설이 부담하는지 여부가 조약별로 달라질 수 있음", noteEn:noteEn||"Treaties may differ on whether the remuneration is borne by a Korean resident, Korean corporation, permanent establishment, or fixed base in Korea.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
+function createUnknownPayerBurdenCondition(noteKo="",noteEn="") { return { conditionType:CONDITION_TYPE.UNKNOWN, required:null, appliesTo:[], displayTextKo:"대가가 국세청 조약에 명시된 국내 주체에 의해 부담되는지 여부는 원문 검토 필요", displayTextEn:"Payer-burden condition requires review of the applicable treaty text", noteKo:noteKo||"대가를 국내 거주자, 국내 법인, 국내 고정사업장 또는 고정시설이 부담하는지 여부가 조약별로 달라질 수 있음", noteEn:noteEn||"Treaties may differ on whether the remuneration is borne by a Korean resident, Korean corporation, permanent establishment, or fixed base in Korea.", sourceArticle:null, verifiedBy:null, verifiedDate:null }; }
 
 function createFixedAmountCondition({threshold,currency,operator,periodBasis,displayTextKo,displayTextEn,sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.FIXED, amountBasisType:AMOUNT_BASIS_TYPE.MONETARY_THRESHOLD, threshold, currency, operator, periodBasis, displayTextKo, displayTextEn, noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
 function createNoAmountCondition({displayTextKo="해당 조항에 별도 금액 기준 없음",displayTextEn="No separate monetary threshold under this article",sourceArticle,verifiedBy,verifiedDate,noteKo="",noteEn=""}) { return { conditionType:CONDITION_TYPE.NONE, amountBasisType:AMOUNT_BASIS_TYPE.NO_MONETARY_THRESHOLD, threshold:null, currency:null, operator:null, periodBasis:PERIOD_BASIS.NOT_APPLICABLE, displayTextKo, displayTextEn, noteKo, noteEn, sourceArticle, verifiedBy, verifiedDate }; }
@@ -504,7 +525,7 @@ window.treatyData=treatyData; window.getTreatyEntry=getTreatyEntry; window.getDi
         });
       } else if (step.type==='searchable_country') {
         const wrapper=document.createElement('div'); wrapper.className="space-y-4 relative";
-        wrapper.innerHTML=`<div class="relative"><input type="text" id="countrySearch" placeholder="Search tax residence (e.g. United States, 독일, 일본...)" class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-postech text-xs font-medium"><div class="absolute right-4 top-4 text-gray-400"><i class="fa-solid fa-magnifying-glass"></i></div></div><div class="text-[11px] text-gray-400 font-medium px-1 leading-relaxed">* Selecting a country does not automatically confirm treaty eligibility.<br><span class="text-gray-400/80">* 국가 선택만으로 조세조약상 비과세 적용이 확정되는 것은 아닙니다.</span></div><div id="autocompleteResults" class="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg z-50 hidden custom-scrollbar"></div>`;
+        wrapper.innerHTML=`<div class="relative"><input type="text" id="countrySearch" placeholder="Search tax residence (e.g. United States, Germany, Japan...)" class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-postech text-xs font-medium"><div class="absolute right-4 top-4 text-gray-400"><i class="fa-solid fa-magnifying-glass"></i></div></div><div class="text-[11px] text-gray-400 font-medium px-1 leading-relaxed">* Selecting a country does not automatically confirm treaty eligibility.<br><span class="text-gray-400/80">* 국가 선택만으로 조세조약상 비과세 적용이 확정되는 것은 아닙니다.</span></div><div id="autocompleteResults" class="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg z-50 hidden custom-scrollbar"></div>`;
         container.appendChild(wrapper);
         const searchInput=document.getElementById('countrySearch'), resultsDiv=document.getElementById('autocompleteResults');
         const filterCountries=()=>{ const term=searchInput.value.toLowerCase(); resultsDiv.innerHTML=''; if(!term){resultsDiv.classList.add('hidden');return;} let matches=0; countries.forEach(cn=>{if(cn.toLowerCase().includes(term)){matches++;const item=document.createElement('div');item.className="p-3 hover:bg-postech-light/20 cursor-pointer text-xs font-medium text-gray-700 border-b border-gray-50 last:border-0";item.innerHTML=cn;item.onclick=()=>{searchInput.value=cn;resultsDiv.classList.add('hidden');selectAnswer('countryOfTax',cn);};resultsDiv.appendChild(item);}}); if(matches>0){resultsDiv.classList.remove('hidden');}else{const noRes=document.createElement('div');noRes.className="p-3 text-xs text-gray-400";noRes.innerText="Setting manual input country / 기타 국가 및 직접 입력";noRes.onclick=()=>{resultsDiv.classList.add('hidden');selectAnswer('countryOfTax',searchInput.value||"Other / 기타");};resultsDiv.appendChild(noRes);resultsDiv.classList.remove('hidden');} };
@@ -524,19 +545,385 @@ window.treatyData=treatyData; window.getTreatyEntry=getTreatyEntry; window.getDi
     function resetWizard() {
       currentPath=null; currentStepIndex=0; answers={}; activePathSteps=[];
       document.getElementById('screen-welcome').classList.remove('hidden');
-      ['screen-questions','screen-loading','screen-result','progressContainer'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+      ['screen-questions','screen-loading','screen-result','progressContainer','directDepositSection','ddPrintOnlyContainer'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
       document.getElementById('taxConsentCheckbox').checked=false;
       document.getElementById('accordionContent').classList.add('hidden');
       document.getElementById('accordionIcon').className="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200";
     }
 
-    function handlePrint() { if(!document.getElementById('taxConsentCheckbox').checked){showCustomAlert("Please check the tax treatment confirmation box before printing/saving. / 인쇄 및 보관 전에 하단 원천징수 확인 및 동의 체크박스에 체크해 주세요.");return;} window.print(); }
+    function handlePrint() { 
+      if(!document.getElementById('taxConsentCheckbox').checked){
+        showCustomAlert("Please check the tax treatment confirmation box before printing/saving. / 인쇄 및 보관 전에 하단 원천징수 확인 및 동의 체크박스에 체크해 주세요.");
+        return;
+      } 
+      // If Path 1, render synchronized final print layout into Page 2 before printing
+      if (currentPath === 1) {
+        syncDirectDepositFields();
+      }
+      window.print(); 
+    }
 
     function toggleAccordion() { const c=document.getElementById('accordionContent'),i=document.getElementById('accordionIcon'); if(c.classList.contains('hidden')){c.classList.remove('hidden');i.className="fa-solid fa-chevron-up text-gray-400 transition-transform duration-200";}else{c.classList.add('hidden');i.className="fa-solid fa-chevron-down text-gray-400 transition-transform duration-200";} }
+
+    // Renders the Direct Deposit form template (Bilingual)
+    function buildDirectDepositFormHTML(isPrintLayout = false) {
+      const pfx = isPrintLayout ? "print_" : "input_";
+      
+      const fieldName = isPrintLayout ? `<span id="dd_p_name" class="font-bold text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_name" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none font-bold text-xs" style="background-color:#fff2b3;" placeholder="Enter Name / 성명 입력">`;
+      const fieldNationality = isPrintLayout ? `<span id="dd_p_nationality" class="font-bold text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_nationality" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none font-bold text-xs" style="background-color:#fff2b3;" placeholder="Enter Nationality / 국적 입력">`;
+      
+      const chkResident = isPrintLayout ? `<span id="dd_p_resident" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_resident" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const chkNonResident = isPrintLayout ? `<span id="dd_p_non_resident" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_non_resident" onchange="syncDirectDepositFields()" class="mr-1">`;
+      
+      const fieldAddress = isPrintLayout ? `<span id="dd_p_address" class="text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_address" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none text-xs" style="background-color:#fff2b3;" placeholder="Residential Address / 거주지 주소 입력">`;
+      const fieldPhone = isPrintLayout ? `<span id="dd_p_phone" class="text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_phone" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none text-xs" style="background-color:#fff2b3;" placeholder="Mobile Phone / 전화번호 입력">`;
+      const fieldIdNo = isPrintLayout ? `<span id="dd_p_id_no" class="text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_id_no" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none text-xs" style="background-color:#fff2b3;" placeholder="ID or Passport No. / 주민·외국인등록번호">`;
+      const fieldEmail = isPrintLayout ? `<span id="dd_p_email" class="text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_email" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none text-xs" style="background-color:#fff2b3;" placeholder="E-mail Address / 이메일 입력">`;
+      const fieldBankName = isPrintLayout ? `<span id="dd_p_bank_name" class="font-bold text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_bank_name" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none font-bold text-xs" style="background-color:#fff2b3;" placeholder="Bank Name / 은행명 입력">`;
+      const fieldAccountNo = isPrintLayout ? `<span id="dd_p_account_no" class="font-bold text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_account_no" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none font-bold text-xs" style="background-color:#fff2b3;" placeholder="Account No. / 계좌번호 입력">`;
+      const fieldPublicOrg = isPrintLayout ? `<span id="dd_p_public_org" class="text-gray-900 text-xs"></span>` : `<input type="text" id="dd_i_public_org" oninput="syncDirectDepositFields()" class="w-full bg-transparent border-none outline-none text-xs" style="background-color:#fff2b3;" placeholder="Complete only if public organization / 공공기관 소속인 경우만 기재">`;
+      
+      const chkUniv = isPrintLayout ? `<span id="dd_p_entity_univ" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_entity_univ" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const chkFoundation = isPrintLayout ? `<span id="dd_p_entity_foundation" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_entity_foundation" onchange="syncDirectDepositFields()" class="mr-1">`;
+
+      // Detail checkboxes
+      const chkIps = isPrintLayout ? `<span id="dd_p_ips" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_ips" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const chkHonorarium = isPrintLayout ? `<span id="dd_p_honorarium" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_honorarium" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const chkTemp = isPrintLayout ? `<span id="dd_p_temp" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_temp" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const chkPrize = isPrintLayout ? `<span id="dd_p_prize" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_prize" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const chkBusiness = isPrintLayout ? `<span id="dd_p_business" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_business" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const chkNontax = isPrintLayout ? `<span id="dd_p_nontax" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_nontax" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const chkOther = isPrintLayout ? `<span id="dd_p_other" class="font-bold">□</span>` : `<input type="checkbox" id="dd_i_other" onchange="syncDirectDepositFields()" class="mr-1">`;
+      const fieldOtherPct = isPrintLayout ? `<span id="dd_p_other_pct" class="font-bold text-gray-900 border-b border-black px-2">___</span>` : `<input type="text" id="dd_i_other_pct" oninput="syncDirectDepositFields()" class="border-b border-gray-400 w-12 text-center text-xs" placeholder="___">`;
+
+      const signDate = isPrintLayout ? `<span id="dd_p_date" class="font-bold text-gray-900"></span>` : `<input type="text" id="dd_i_date" oninput="syncDirectDepositFields()" class="bg-transparent border-none outline-none font-bold text-xs w-28 text-center" style="background-color:#fff2b3;" placeholder="2026. 06. 26.">`;
+      const signName = isPrintLayout ? `<span id="dd_p_signature_name" class="font-bold text-gray-900"></span>` : `<input type="text" id="dd_i_signature_name" oninput="syncDirectDepositFields()" class="bg-transparent border-none outline-none font-bold text-xs w-36" style="background-color:#fff2b3;" placeholder="Applicant Name / 성명">`;
+      const signatureBox = isPrintLayout ? `<span class="dd-signature-line" style="min-width: 32mm;"></span>` : `<span class="text-[10px] text-gray-400 italic font-normal">[Sign on printed page / 출력 후 직접 서명]</span>`;
+
+      return `
+        <div class="dd-page">
+          <h1 class="dd-h1">계좌입금의뢰서</h1>
+          <h2 class="dd-h2">Direct Deposit Payment Request</h2>
+          
+          <div class="dd-instruction">
+            <div><b>작성 안내 / Instructions for Applicant</b></div>
+            <div>※ 신청자는 노란색으로 표시된 항목을 작성 또는 확인한 후, 출력하여 신청자 서명란에 직접 서명하고 호스트에게 제출해 주시기 바랍니다.</div>
+            <span class="en">Please complete or review the yellow-highlighted fields, print this form, personally sign the applicant signature line, and submit it to your host.</span>
+            <div class="mt-1">※ 지급내역 및 원천세율은 학과/재무부서 검토 후 최종 확정됩니다. 신청자는 해당 항목을 임의로 선택하지 마시기 바랍니다.</div>
+            <span class="en">Payment category and withholding tax rate will be finalized after review by the department/Finance Office. Applicants should not select these items unless instructed.</span>
+          </div>
+
+          <table class="dd-table">
+            <colgroup>
+              <col style="width:12%">
+              <col style="width:38%">
+              <col style="width:12%">
+              <col style="width:38%">
+            </colgroup>
+            <tr>
+              <th class="dd-gray dd-center"><span class="dd-labelko">성명</span><span class="dd-labelen">Name</span></th>
+              <td class="dd-yellow">${fieldName}</td>
+              <th class="dd-gray dd-center"><span class="dd-labelko">국적</span><span class="dd-labelen">Nationality</span></th>
+              <td class="dd-yellow">${fieldNationality}</td>
+            </tr>
+            <tr>
+              <th class="dd-gray dd-center" rowspan="7"><span class="dd-labelko">인적사항</span><span class="dd-labelen">Personal<br>Information</span></th>
+              <td class="dd-yellow"><span class="dd-labelko">국가 및 신분 구분</span><span class="dd-labelen">Tax Residence & Status</span></td>
+              <td class="dd-yellow" colspan="2">
+                <div class="flex gap-4">
+                  <label class="cursor-pointer flex items-center">${chkResident}<span class="ml-1 text-[10px] font-bold">거주자 / Resident</span></label>
+                  <label class="cursor-pointer flex items-center">${chkNonResident}<span class="ml-1 text-[10px] font-bold">비거주자 / Non-resident</span></label>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="3" class="dd-pale">
+                <div class="dd-note-ko">※ 거주자/비거주자의 경우 적용 세율이 상이하므로 반드시 확인하여 신청 요망</div>
+                <div class="dd-note-en">Please confirm your resident/non-resident tax status before submitting this form, as applicable withholding tax rates differ.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="dd-gray"><span class="dd-labelko">주소/거주지</span><span class="dd-labelen">Address</span></td>
+              <td class="dd-yellow" colspan="2">${fieldAddress}</td>
+            </tr>
+            <tr>
+              <td class="dd-gray"><span class="dd-labelko">이동전화</span><span class="dd-labelen">Mobile phone</span></td>
+              <td class="dd-yellow" colspan="2">${fieldPhone}</td>
+            </tr>
+            <tr>
+              <td class="dd-gray"><span class="dd-labelko">주민번호/외국인등록번호</span><span class="dd-labelen">Resident/Alien Reg. No.</span></td>
+              <td class="dd-yellow" colspan="2">${fieldIdNo}</td>
+            </tr>
+            <tr>
+              <td class="dd-gray"><span class="dd-labelko">이메일</span><span class="dd-labelen">E-mail</span></td>
+              <td class="dd-yellow" colspan="2">${fieldEmail}</td>
+            </tr>
+            <tr>
+              <td class="dd-gray"><span class="dd-labelko">은행명</span><span class="dd-labelen">Bank Name</span></td>
+              <td class="dd-yellow" colspan="2">${fieldBankName}</td>
+            </tr>
+            <tr>
+              <th class="dd-gray dd-center"><span class="dd-labelko">은행정보</span><span class="dd-labelen">Bank Info</span></th>
+              <td class="dd-gray"><span class="dd-labelko">계좌번호</span><span class="dd-labelen">Account No.</span></td>
+              <td class="dd-yellow" colspan="2">${fieldAccountNo}</td>
+            </tr>
+            <tr>
+              <td colspan="4" class="dd-yellow">
+                <span class="dd-labelko">소속 공공기관 / Public Organization</span>
+                <div class="flex items-center gap-2 mt-1">
+                  <div class="shrink-0 font-bold text-[10px] text-postech">소속 기재 / Affiliation:</div>
+                  <div class="flex-grow">${fieldPublicOrg}</div>
+                </div>
+                <div class="dd-note-ko mt-1">※ 청탁금지법에 따른 공공기관 소속인 경우만 기재</div>
+                <div class="dd-note-en">Complete only if you belong to a public organization under the Improper Solicitation and Graft Act.</div>
+              </td>
+            </tr>
+          </table>
+
+          <table class="dd-table" style="margin-top: 1.5mm;">
+            <colgroup>
+              <col style="width:22%">
+              <col style="width:54%">
+              <col style="width:8%">
+              <col style="width:16%">
+            </colgroup>
+            <tr class="dd-gray dd-center dd-bold">
+              <th><span class="dd-labelko">등록 구분</span><span class="dd-labelen">Payment Processing Entity</span></th>
+              <th colspan="2"><span class="dd-labelko">지급내역 / Payment Details</span></th>
+              <th><span class="dd-labelko">실질 원천세율</span><span class="dd-labelen">Withholding Rate</span></th>
+            </tr>
+            <tr>
+              <td rowspan="7" class="dd-center dd-small">
+                <div class="space-y-3 font-semibold">
+                  <label class="block cursor-pointer flex items-center justify-center">${chkUniv}<span class="ml-1"><b>대학 (2000)</b><br><span class="dd-tiny">Univ (2000)</span></span></label>
+                  <label class="block cursor-pointer flex items-center justify-center">${chkFoundation}<span class="ml-1"><b>산단 (4000)</b><br><span class="dd-tiny">R&B (4000)</span></span></label>
+                </div>
+              </td>
+              <td><b>외국인 자문료</b><br><span class="dd-tiny">Advisory Fee for Foreign Individuals</span></td>
+              <td class="dd-center">${chkIps}</td>
+              <td class="dd-center dd-bold" style="font-size: 8pt;">22%</td>
+            </tr>
+            <tr>
+              <td><b>사례금 (경품/상금/면접비)</b><br><span class="dd-tiny">Honorarium, Prize, Award, or Interview Allowance</span></td>
+              <td class="dd-center">${chkHonorarium}</td>
+              <td class="dd-center dd-bold" style="font-size: 8pt;">22%</td>
+            </tr>
+            <tr>
+              <td><b>일시적으로 이루어진 용역의 대가</b><br><span class="dd-tiny">Payment for Temporary Services (Lecture, advisory, expert services, etc.)</span></td>
+              <td class="dd-center">${chkTemp}</td>
+              <td class="dd-center dd-bold" style="font-size: 8pt;">8.8%</td>
+            </tr>
+            <tr>
+              <td><b>불특정 다수를 대상으로 하는 순위경쟁 상금 등</b><br><span class="dd-tiny">Prize Money from Open Ranking-based Competitions</span></td>
+              <td class="dd-center">${chkPrize}</td>
+              <td class="dd-center dd-bold" style="font-size: 8pt;">4.4%</td>
+            </tr>
+            <tr>
+              <td><b>사업소득(전문강사 등)</b><br><span class="dd-tiny">Business Income, e.g. Professional Lecturer</span></td>
+              <td class="dd-center">${chkBusiness}</td>
+              <td class="dd-center dd-bold" style="font-size: 8pt;">3.3%</td>
+            </tr>
+            <tr>
+              <td><b>과세최저한에 따른 비과세(5만원 이하의 면접비 등)</b><br><span class="dd-tiny">Non-taxable / Under Monetary Limit (under KRW 50,000)</span></td>
+              <td class="dd-center">${chkNontax}</td>
+              <td class="dd-center dd-bold" style="font-size: 8pt;">0%</td>
+            </tr>
+            <tr>
+              <td><b>기타 조세조약 비과세 (상대국 면세 대상) / Other Exemption</b><br><span class="dd-tiny">Specific Tax Treaty Exemption Applied</span></td>
+              <td class="dd-center">${chkOther}</td>
+              <td class="dd-center dd-bold" style="font-size: 8pt;">${fieldOtherPct}%</td>
+            </tr>
+            <tr>
+              <td colspan="4" class="dd-pale">
+                <div class="dd-note-ko">※ 지급내역 및 원천세율은 학과/재무부서 검토 후 최종 확정됩니다. 신청자는 해당 항목을 임의로 선택하지 마시기 바랍니다.</div>
+                <div class="dd-note-en">Payment category and withholding tax rate will be finalized after review by the department/Finance Office. Applicants should not select these items unless instructed.</div>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="4" class="font-medium" style="font-size: 6pt; padding: 1mm 1.5mm;">
+                <b>붙임 / Attachment:</b> Copy of National ID, Alien Registration Card, or Passport (submit one), and a copy of bank account information / 신분증 사본 및 통장 사본 각 1부 제출 필요.
+              </td>
+            </tr>
+          </table>
+
+          <table class="dd-table" style="margin-top: 1.5mm;">
+            <tr>
+              <td colspan="3" class="dd-pale">
+                <b>□ 개인정보 수집·이용 사항 고지 / Notice Regarding the Collection and Use of Personal Information</b><br>
+                <span class="dd-tiny">개인정보보호법 제15조제1항제4호, 제24조제1항제2호에 따라 개인정보를 수집·이용합니다. / Collected and used pursuant to the Personal Information Protection Act.</span>
+              </td>
+            </tr>
+            <tr class="dd-gray dd-center dd-bold" style="font-size: 6.5pt;">
+              <th>개인정보 처리목적<br><span class="dd-tiny">Purpose of Processing</span></th>
+              <th>개인정보 항목<br><span class="dd-tiny">Personal Information Items</span></th>
+              <th>수집 근거<br><span class="dd-tiny">Legal Basis for Collection</span></th>
+            </tr>
+            <tr style="font-size: 6pt;">
+              <td class="dd-center">계좌 입금 처리<br><span class="dd-tiny">Direct Deposit Processing</span></td>
+              <td>성명, 국적, 주소, 이동전화번호, 이메일, 은행계좌정보, 소속기관<br><span class="dd-tiny">Name, nationality, address, mobile, email, bank details, affiliated institution</span></td>
+              <td class="dd-center">개인정보보호법 제15조제1항제4호<br><span class="dd-tiny">Article 15(1)4 of Privacy Act</span></td>
+            </tr>
+            <tr style="font-size: 6pt;">
+              <td class="dd-center">소득지급명세 신고<br><span class="dd-tiny">Income Reporting</span></td>
+              <td>주민등록번호(내국인), 외국인등록번호(외국인)<br><span class="dd-tiny">Resident/Alien Registration Number</span></td>
+              <td class="dd-center">소득세법 제164조<br><span class="dd-tiny">Article 164 of Income Tax Act</span></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="dd-yellow" style="padding: 2.5mm 2mm; font-size: 7.2pt;">
+                <div class="font-bold mb-1.5">상기의 계좌로 입금받기를 요청합니다. <span class="font-normal text-gray-700">/ I request POSTECH to directly deposit the payment to the above bank account.</span></div>
+                <div class="flex justify-between items-center mt-2 flex-wrap gap-2">
+                  <div>작성일 / Date: ${signDate}</div>
+                  <div>신청자 성명 / Applicant Name: ${signName}</div>
+                  <div>서명 / Signature: ${signatureBox}</div>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- New "♠ 요청부서 작성" Section matching image_c7f446.png -->
+          <div style="margin-top: 2.5mm; font-size: 7.5pt; font-weight: 800; color: #000; text-align: left;">
+            ♠ 요청부서 작성 <span style="font-size: 5.5pt; font-weight: normal; color: #555; margin-left: 1mm;">/ To be filled out by the Requesting Department</span>
+          </div>
+          <table class="dd-table" style="margin-top: 1mm; table-layout: fixed;">
+            <colgroup>
+              <col style="width: 33.33%;">
+              <col style="width: 33.33%;">
+              <col style="width: 33.33%;">
+            </colgroup>
+            <tr class="dd-gray dd-center dd-bold" style="font-size: 7.2pt; height: 5mm;">
+              <td>부서명 <span style="font-size: 5.5pt; font-weight: normal; color: #444;"><br>Department Name</span></td>
+              <td>담당자 <span style="font-size: 5.5pt; font-weight: normal; color: #444;"><br>Staff in Charge</span></td>
+              <td>전화번호 <span style="font-size: 5.5pt; font-weight: normal; color: #444;"><br>Phone No.</span></td>
+            </tr>
+            <tr style="height: 6.5mm;">
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 2.5mm; font-size: 6.8pt; line-height: 1.2; color: #000; text-align: left; font-weight: 500;">
+            ※ 포항공과대학교는 상기의 개인정보를 자금지급 및 세무신고에만 활용함을 안내드립니다.
+            <span class="en" style="display: block; font-size: 5.2pt; color: #555; padding-left: 3.5mm;">POSTECH will use the above personal information only for payment processing and tax reporting purposes.</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Synchronizes interactive input data with static printable DOM element
+    function syncDirectDepositFields() {
+      const fields = ['name', 'nationality', 'address', 'phone', 'id_no', 'email', 'bank_name', 'account_no', 'public_org', 'other_pct'];
+      
+      fields.forEach(f => {
+        const inputEl = document.getElementById(`dd_i_${f}`);
+        const printEl = document.getElementById(`dd_p_${f}`);
+        if (inputEl && printEl) {
+          printEl.innerText = inputEl.value || "________________________";
+        }
+      });
+
+      // Synchronize checkboxes
+      const checks = [
+        'resident', 'non_resident', 'entity_univ', 'entity_foundation', 
+        'ips', 'honorarium', 'temp', 'prize', 'business', 'nontax', 'other'
+      ];
+      checks.forEach(c => {
+        const inputChk = document.getElementById(`dd_i_${c}`);
+        const printChk = document.getElementById(`dd_p_${c}`);
+        if (inputChk && printChk) {
+          printChk.innerText = inputChk.checked ? "■" : "□";
+        }
+      });
+
+      // Special Date & Signatures
+      const dateInput = document.getElementById('dd_i_date');
+      const datePrint = document.getElementById('dd_p_date');
+      if (dateInput && datePrint) {
+        datePrint.innerText = dateInput.value || "2026. 06. 26.";
+      }
+
+      const sigInput = document.getElementById('dd_i_signature_name');
+      const sigPrint = document.getElementById('dd_p_signature_name');
+      if (sigInput && sigPrint) {
+        sigPrint.innerText = sigInput.value || "________________________";
+      }
+    }
+
+    // Clean CSS string of the form to embed in exported HTML/Word documents
+    function getDirectDepositStyles() {
+      return `
+        body { font-family: Arial, sans-serif; background-color: #fff; margin: 10mm; }
+        .dd-page { width:100%; max-width:194mm; margin:0 auto; background:white; padding:0; color:#000; }
+        .dd-h1 { margin:1.5mm 0 0; text-align:center; font-size:18pt; line-height:1.05; font-weight:800; color:#000; }
+        .dd-h2 { margin:0 0 1.5mm; text-align:center; font-size:10pt; line-height:1.0; font-weight:800; color:#000; }
+        .dd-table { border-collapse:collapse; width:100%; table-layout:fixed; border: 1px solid #000; margin-top: 2mm; }
+        .dd-table th, .dd-table td { border:1px solid #000; padding:2mm 1.5mm; vertical-align:middle; font-size:7.5pt; line-height:1.1; word-break:keep-all; overflow-wrap:break-word; color:#000; }
+        .dd-center { text-align:center; }
+        .dd-bold { font-weight:800; }
+        .dd-small { font-size:5.8pt; }
+        .dd-tiny { font-size:5.1pt; }
+        .dd-gray { background-color:#f0f0f0 !important; }
+        .dd-yellow { background-color:#fff2b3 !important; }
+        .dd-pale { background-color:#fff7cc !important; }
+        .dd-labelko { display:block; font-weight:800; font-size:7.2pt; }
+        .dd-labelen { display:block; font-size:5.2pt; line-height:1.0; }
+        .dd-instruction { background-color:#fff2b3 !important; border:1px solid #000; padding:2mm; margin-bottom:1.5mm; font-size:6.2pt; line-height:1.2; }
+        .dd-instruction .en { padding-left:3mm; display:block; }
+        .dd-note-ko { font-size:5.7pt; font-weight:700; }
+        .dd-note-en { font-size:5.2pt; padding-left:3mm; }
+        .dd-signature-line { display:inline-block; border-bottom:1px solid #000; min-width:35mm; height:4mm; vertical-align:bottom; }
+        .dd-footer { font-size:5.5pt; margin-top:1.5mm; line-height:1.2; color:#555; }
+        .dd-footer .en { padding-left:3mm; display:block; }
+      `;
+    }
+
+    // High fidelity exports generator - modified to keep only print
+    function exportDirectDeposit(format) {
+      // Sync latest values from user input first
+      syncDirectDepositFields();
+
+      // Retrieve rendered HTML code with filled spans
+      const formMarkup = document.getElementById('ddPrintOnlyContainer').innerHTML;
+
+      if (format === 'print') {
+        const printWindow = window.open("", "_blank");
+        printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Direct Deposit Payment Request</title>
+<style>${getDirectDepositStyles()}</style>
+</head>
+<body>
+${formMarkup}
+<script>
+window.onload = function() {
+  window.print();
+  setTimeout(function() { window.close(); }, 500);
+};
+<\/script>
+</body>
+</html>`);
+        printWindow.document.close();
+      }
+    }
 
     function processWithAIOnyx() {
       const resTaxStatusEl=document.getElementById('resTaxStatus'), resIncomeTypeEl=document.getElementById('resIncomeType'), resTaxTreatmentEl=document.getElementById('resTaxTreatment'), resVisaNoteEl=document.getElementById('resVisaNote'), resWhyTextEl=document.getElementById('resWhyText'), resDocumentsListEl=document.getElementById('resDocumentsList'), nextStepTextEl=document.getElementById('resNextStepText'), consentLabelEl=document.getElementById('taxConsentLabel'), checklistArea=document.getElementById('treatyChecklistArea'), checklistContainer=document.getElementById('treatyChecklistContainer');
       resDocumentsListEl.innerHTML=''; checklistContainer.innerHTML=''; checklistArea.classList.add('hidden');
+      
+      // Select Direct Deposit Sections
+      const directDepositSection = document.getElementById('directDepositSection');
+      const ddInteractiveContainer = document.getElementById('ddInteractiveContainer');
+      const ddPrintOnlyContainer = document.getElementById('ddPrintOnlyContainer');
+      
+      directDepositSection.classList.add('hidden');
+      ddInteractiveContainer.innerHTML = '';
+      ddPrintOnlyContainer.innerHTML = '';
+
       let countryKey=answers.countryOfTax||"Other (기타 국가)", cleanCountryName=countryKey.split(' (')[0].trim();
       const entry=window.getTreatyEntry(cleanCountryName), displayMode=window.getDisplayMode(cleanCountryName), ruleStatusMsg=window.getRuleStatusMessage(cleanCountryName);
       const statusCard=document.getElementById('treatyStatusCard'), statusIcon=document.getElementById('treatyStatusIcon'), statusTitle=document.getElementById('treatyStatusTitle'), statusDesc=document.getElementById('treatyStatusDesc');
@@ -552,6 +939,57 @@ window.treatyData=treatyData; window.getTreatyEntry=getTreatyEntry; window.getDi
         resTaxStatusEl.innerText=answers.isKoreanResident==='yes'?"Resident (국내 거주자)":"Non-Resident (비거주자)";
         const typeLabels={"lecture_fee":"Lecture Fee / 강연료","advisory_fee":"Advisory Fee / 자문료","review_fee":"Evaluation & Review Fee / 심사료","conference_allowance":"Conference Allowance / 회의참석 수당"};
         resIncomeTypeEl.innerText=typeLabels[answers.paymentType]||"Independent Personal Service (독립적 인적용역)";
+        
+        // Show and build Direct Deposit layout (Specifically for Path 1)
+        directDepositSection.classList.remove('hidden');
+        ddInteractiveContainer.innerHTML = buildDirectDepositFormHTML(false);
+        ddPrintOnlyContainer.innerHTML = buildDirectDepositFormHTML(true);
+
+        // Prepopulate known data into form
+        setTimeout(() => {
+          const nameInput = document.getElementById('dd_i_name');
+          const nationalityInput = document.getElementById('dd_i_nationality');
+          const residentCheck = document.getElementById('dd_i_resident');
+          const nonResidentCheck = document.getElementById('dd_i_non_resident');
+          
+          if (nationalityInput) nationalityInput.value = cleanCountryName;
+          
+          if (answers.isKoreanResident === 'yes') {
+            if (residentCheck) residentCheck.checked = true;
+          } else {
+            if (nonResidentCheck) nonResidentCheck.checked = true;
+          }
+
+          // Automatically select processing details category
+          const chkIPS = document.getElementById('dd_i_ips');
+          const chkNontax = document.getElementById('dd_i_nontax');
+          const chkOther = document.getElementById('dd_i_other');
+          const otherPct = document.getElementById('dd_i_other_pct');
+
+          // Default Date set to today's date
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          const dateStr = `${year}. ${month}. ${day}.`;
+          const dateInput = document.getElementById('dd_i_date');
+          if (dateInput) dateInput.value = dateStr;
+
+          // Process tax treatment checkbox mappings
+          if (answers.isKoreanResident === 'yes') {
+            const chkBusiness = document.getElementById('dd_i_business');
+            if (chkBusiness) chkBusiness.checked = true;
+          } else if (answers.canSubmitCert === 'no' || entry.meta.hasTreaty === false) {
+            if (chkIPS) chkIPS.checked = true;
+          } else {
+            // Highly eligible for Tax treaty exemption
+            if (chkOther) chkOther.checked = true;
+            if (otherPct) otherPct.value = "0";
+          }
+
+          syncDirectDepositFields();
+        }, 100);
+
         if(answers.isKoreanResident==='yes'){
           expectedTreatment="Withholding tax may apply / 원천징수세가 적용될 수 있음 (국내 프리랜서 3.3% 과세 기준)";
           whyReasonText="귀하는 국내 거주 중인 상태를 선택하셨으므로, 국내 소득세법(거주자 사업소득 원천징수)이 우선 적용됩니다. / Standard resident freelance withholding tax (3.3%) applies.";
@@ -676,38 +1114,6 @@ window.treatyData=treatyData; window.getTreatyEntry=getTreatyEntry; window.getDi
       document.getElementById('screen-loading').classList.add('hidden');
       document.getElementById('screen-result').classList.remove('hidden');
     }
-
-    // AI Co-Pilot
-    const apiKey="";
-    async function fetchGeminiWithRetry(payload,retries=5,delay=1000) {
-      const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-      for(let i=0;i<retries;i++){try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(r.ok)return await r.json();}catch(e){} await new Promise(res=>setTimeout(res,delay*Math.pow(2,i)));}
-      throw new Error("Failed to reach NTS database after several attempts.");
-    }
-
-    async function queryAI(customQuery=null) {
-      const inputEl=document.getElementById('aiInput'), queryText=customQuery||inputEl.value.trim();
-      if(!queryText){showCustomAlert("Please enter a tax-related inquiry or choose a preset! / 세금 관련 질문을 입력하거나 우측의 자주 묻는 질문을 선택해주세요!");return;}
-      document.getElementById('aiLoading').classList.remove('hidden'); document.getElementById('aiResponseBox').classList.add('hidden'); document.getElementById('aiSources').classList.add('hidden');
-      const systemPrompt=`You are an administrative AI Tax Co-pilot specialized in Korean Tax Law, bilateral tax treaties, and National Tax Service (NTS) guidelines. Your primary role is to assist the Department of Chemistry at POSTECH in answering questions for international visitors, researchers, and administrators about non-resident taxation, withholding tax, double tax treaties, and required documentation. Guidelines: 1. Base your response on current Korean tax law. 2. Format professionally using markdown bold, bullet points, and Korean & English translations. 3. Never guarantee final exemption. 4. Clearly emphasize that final decisions depend on formal submission and administrator verification.`;
-      const payload={contents:[{parts:[{text:queryText}]}],tools:[{"google_search":{}}],systemInstruction:{parts:[{text:systemPrompt}]}};
-      try{
-        const result=await fetchGeminiWithRetry(payload);
-        const text=result.candidates?.[0]?.content?.parts?.[0]?.text;
-        if(!text) throw new Error("No response returned from the tax engine.");
-        document.getElementById('aiResponseText').innerHTML=parseMarkdownToHtmlLocal(text);
-        const attributions=result.candidates?.[0]?.groundingMetadata?.groundingAttributions;
-        const sourcesContainer=document.getElementById('aiSourcesContainer'); sourcesContainer.innerHTML='';
-        if(attributions&&attributions.length>0){
-          document.getElementById('aiSources').classList.remove('hidden');
-          const seen=new Set();
-          attributions.forEach(attr=>{const uri=attr.web?.uri,title=attr.web?.title||"National Tax Service Record";if(uri&&!seen.has(uri)){seen.add(uri);const badge=document.createElement('a');badge.href=uri;badge.target="_blank";badge.className="inline-flex items-center gap-1 text-[10px] bg-postech-light hover:bg-postech hover:text-white text-postech font-semibold px-2 py-0.5 rounded transition-colors border border-postech/10 shadow-sm";badge.innerHTML=`<i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i> ${title.substring(0,30)}${title.length>30?'...':''}`;sourcesContainer.appendChild(badge);}});
-        }
-        document.getElementById('aiResponseBox').classList.remove('hidden');
-      } catch(error){showCustomAlert(error.message);} finally{document.getElementById('aiLoading').classList.add('hidden');}
-    }
-
-    function askPreset(promptText){document.getElementById('aiInput').value=promptText;queryAI(promptText);}
   </script>
 </body>
 </html>
