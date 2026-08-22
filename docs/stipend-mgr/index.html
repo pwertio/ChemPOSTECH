@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>포스텍 화학과 대학원생 조교수당 통합계산 및 신청서</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';"></script>
+<!-- v8: 지급입력 hasOrg 렌더링 오류 수정 -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.min.js';"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -185,6 +186,21 @@
   .badge-ok     { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
   .badge-info   { background: rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
   .badge-purple { background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+
+
+  /* PAYMENT HEADER BADGES */
+  .pay-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:10px; font-weight:700; white-space:nowrap; border:1px solid transparent; }
+  .pay-standard-normal   { background:rgba(99,102,241,0.13); color:#a5b4fc; border-color:rgba(99,102,241,0.32); }
+  .pay-standard-ta       { background:rgba(16,185,129,0.12); color:#6ee7b7; border-color:rgba(16,185,129,0.32); }
+  .pay-standard-over     { background:rgba(245,158,11,0.12); color:#fbbf24; border-color:rgba(245,158,11,0.34); }
+  .pay-standard-dispatch { background:rgba(100,116,139,0.13); color:#cbd5e1; border-color:rgba(100,116,139,0.34); }
+  .topup-track-ma        { background:rgba(6,182,212,0.12); color:#67e8f9; border-color:rgba(6,182,212,0.34); }
+  .topup-track-dr        { background:rgba(59,130,246,0.13); color:#93c5fd; border-color:rgba(59,130,246,0.34); }
+  .pay-status-wrap       { display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .pay-status-dispatch   { background:rgba(100,116,139,0.12); color:#cbd5e1; border-color:rgba(100,116,139,0.30); }
+  .pay-status-over       { background:rgba(245,158,11,0.12); color:#fbbf24; border-color:rgba(245,158,11,0.34); }
+  .pay-status-org        { background:rgba(239,68,68,0.10); color:#fca5a5; border-color:rgba(239,68,68,0.30); }
+  .pay-status-topup      { background:rgba(16,185,129,0.10); color:#6ee7b7; border-color:rgba(16,185,129,0.30); }
 
   /* TABLE */
   .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -768,7 +784,7 @@
     <!-- UNIT TEST -->
     <div class="panel" id="panel-unittest">
       <div class="section-header">
-        <div><div class="section-title">🧪 단위 테스트</div><div class="section-desc">규칙 검증 로직 자동 테스트 (33개)</div></div>
+        <div><div class="section-title">🧪 단위 테스트</div><div class="section-desc">규칙 검증 로직 자동 테스트 (37개)</div></div>
         <button class="btn btn-primary btn-sm" onclick="runTests()">▶ 테스트 실행</button>
       </div>
       <div id="testResults"><div class="alert alert-info"><span class="alert-icon">ℹ</span>테스트 실행 버튼을 클릭하세요.</div></div>
@@ -910,7 +926,10 @@ var State = {
   wbsInstitution: [],
   // studentSources[semId][studentId] = [{key, src, label, isSandan}]
   // key는 유니크 인스턴스 키, src는 재원 코드
-  studentSources: {}
+  studentSources: {},
+  // sourceMeta[semId][studentId][sourceKey] = { projectNo, accountName }
+  // 지급내역 Excel의 과제번호/계정명 출력용 메타데이터
+  sourceMeta: {}
 };
 
 // 선택 가능한 재원 메뉴 정의
@@ -991,6 +1010,7 @@ function confirmClearAll() {
   State.semesters = [];
   State.payments  = {};
   State.studentSources = {};
+  State.sourceMeta = {};
   State.currentSemId = null;
   State.wbsInstitution = [];
   State.validationResult = { blocks:[], warns:[] };
@@ -1172,6 +1192,9 @@ function setPaymentRaw(semId, studentId, src, month, val) {
   State.payments[semId][studentId][src][month] = val;
 }
 function computeTopup(st, semId, month) {
+  // 지급기준금액이 0원인 학생은 모든 지급 대상에서 제외합니다.
+  // 예: 지급기준이 '파견'으로 등록되어 기준금액이 0원인 학생.
+  if (getPaymentStandardAmount(st) <= 0) return 0;
   if (st.status === '파견') return 0;
   var baseSum = 0;
   var orgAmt  = 0;
@@ -1265,6 +1288,30 @@ function getContiguousRuns(months, semId, studentId, src) {
 }
 
 // ============================================================
+// 지급 재원 과제정보 필수입력 검증 보조함수
+// ============================================================
+function hasPaymentForSource(semId, studentId, sourceKey, months) {
+  return months.some(function(mo) {
+    return getPayment(semId, studentId, sourceKey, mo.month) > 0;
+  });
+}
+
+function getMissingSourceMetaFields(semId, studentId, sourceKey) {
+  var meta = getSourceMeta(semId, studentId, sourceKey);
+  var missing = [];
+  if (!meta || !String(meta.projectNo || '').trim()) missing.push('과제번호');
+  if (!meta || !String(meta.accountName || '').trim()) missing.push('계정명');
+  return missing;
+}
+
+// 과제번호/계정명 필수입력 대상 재원
+// 본교 내부 과제번호 체계를 사용하는 두 재원에만 적용합니다.
+// 그 외(BK21, 학생인건비 개별/기관, 이공계, 외부과제, 외부장학금/Fellowship, 교비)는 과제번호/계정명 Block 대상이 아닙니다.
+function requiresSourceMeta(src) {
+  return src === 'univ' || src === 'univRes';
+}
+
+// ============================================================
 // VALIDATION
 // ============================================================
 function runValidation() {
@@ -1279,16 +1326,22 @@ function runValidation() {
     var track     = getTrack(st);
     var base      = track === 'MA' ? Config.topMA_base : Config.topDR_base;
     var cap       = track === 'MA' ? Config.topMA_cap  : Config.topDR_cap;
+    var paymentStandardAmount = getPaymentStandardAmount(st);
 
-    // ── 파견 ───────────────────────────────────────────────────
-    if (st.status === '파견') {
+    // ── 지급기준금액 0원 / 파견: 모든 지급 입력 불가 ─────────────
+    if (paymentStandardAmount <= 0 || st.status === '파견') {
       var hasAny = SOURCES.some(function(src) {
         return months.some(function(mo) { return getPayment(semId, st.id, src, mo.month) > 0; });
       });
       var hasAdded = addedRows.some(function(row) {
         return months.some(function(mo) { return getPayment(semId, st.id, row.key, mo.month) > 0; });
       });
-      if (hasAny || hasAdded) blocks.push({ student: st.name, id: st.id, msg: '파견 학생에게 지급 입력됨' });
+      if (hasAny || hasAdded) {
+        blocks.push({
+          student: st.name, id: st.id,
+          msg: '[지급불가] 지급기준 ' + (st.criteria || '-') + ' / 기준금액 ' + fmt(paymentStandardAmount) + '원 — 지급액을 입력할 수 없습니다.'
+        });
+      }
       return;
     }
 
@@ -1412,6 +1465,22 @@ function runValidation() {
     topRuns.forEach(function(run) {
       if (new Set(run.map(function(r){ return r.val; })).size > 1)
         warns.push({ student: st.name, id: st.id, msg: '이공계지원 연속 월 금액 불일치' });
+    });
+
+    // ── 추가 재원 과제정보 필수입력 체크 ──────────────────────────
+    // 실제 지급액이 있는 사용자 추가 재원 중, 과제정보 확인이 가능한 재원만 검사합니다.
+    // 필수 대상: 본교 산단 회계 과제 인건비 / 본교 대학 회계 과제 인건비 / 교비
+    // 예외: BK21 / 외부 과제 인건비 / 외부장학금·Fellowship / 학생인건비(개별·기관) / 이공계 연구생활장려금
+    addedRows.forEach(function(row) {
+      if (!requiresSourceMeta(row.src)) return;
+      if (!hasPaymentForSource(semId, st.id, row.key, months)) return;
+      var missing = getMissingSourceMetaFields(semId, st.id, row.key);
+      if (missing.length) {
+        blocks.push({
+          student: st.name, id: st.id,
+          msg: '[필수입력] ' + (row.label || SOURCE_LABELS[row.src] || row.src) + ' — ' + missing.join('·') + ' 미입력 (지급입력의 ✎ 과제정보에서 입력 필요)'
+        });
+      }
     });
   });
 
@@ -1589,6 +1658,9 @@ function purgeStudentData(id) {
   });
   Object.keys(State.studentSources).forEach(function(semId) {
     if (State.studentSources[semId]) delete State.studentSources[semId][id];
+  });
+  Object.keys(State.sourceMeta || {}).forEach(function(semId) {
+    if (State.sourceMeta[semId]) delete State.sourceMeta[semId][id];
   });
   State.pledges = State.pledges.filter(function(p) { return p.studentId !== id; });
 }
@@ -1981,6 +2053,7 @@ function validatePledge(rows) {
   var resultEl = document.getElementById('pledgeResult');
   var errors = [], warns = [], applied = 0, skipped = 0;
   var indCount = 0, orgCount = 0;
+  var nonPayableErrors = [];
 
   // 헤더로 컬럼 인덱스 매핑
   var header = (rows[0] || []).map(function(h) { return String(h).trim(); });
@@ -2009,6 +2082,8 @@ function validatePledge(rows) {
     var sid      = String(row[col['학번']]   || '').trim();
     var sname    = col['이름'] !== undefined ? String(row[col['이름']] || '').trim() : '';
     var wbs      = String(row[col['WBS']]    || '').trim();
+    // 표준 확약서에는 계정명 컬럼이 없을 수 있으므로 선택 항목으로 처리
+    var pledgeAccountName = col['계정명'] !== undefined ? String(row[col['계정명']] || '').trim() : '';
     var startStr = String(row[col['확약시작일']] || '').trim();
     var endStr   = String(row[col['확약종료일']] || '').trim();
     var wage1    = String(row[col['임금유형1']] || '').trim();
@@ -2055,6 +2130,16 @@ function validatePledge(rows) {
     }
     if (!sem) { skipped++; continue; }
 
+    // ── 지급기준금액 0원 학생은 학생인건비 확약 자체가 불가 ──────
+    var stForPledge = State.students.find(function(s) { return s.id === sid; });
+    if (stForPledge && getPaymentStandardAmount(stForPledge) <= 0 && amount > 0) {
+      var npMsg = lineNum + ': ⛔ 지급기준 "' + (stForPledge.criteria || '-') + '" / 기준금액 0원 — 학생인건비 확약 금액 ' + fmt(amount) + '원을 적용할 수 없습니다.';
+      errors.push(npMsg);
+      nonPayableErrors.push(npMsg);
+      skipped++;
+      continue;
+    }
+
     // ── 확약 기간 → 월 추출 ────────────────────────
     var startMo = parseInt(startStr.slice(4, 6), 10);
     var endMo   = parseInt(endStr.slice(4,   6), 10);
@@ -2085,7 +2170,8 @@ function validatePledge(rows) {
 
     State.pledges.push({
       type: srcKey, studentId: sid, semId: sem.id,
-      wbs: wbs, startMo: startMo, endMo: endMo, amount: amount
+      wbs: wbs, accountName: pledgeAccountName,
+      startMo: startMo, endMo: endMo, amount: amount
     });
   }
 
@@ -2162,7 +2248,7 @@ function validatePledge(rows) {
   }
 
   // ⚠️ 규정 위반 시 전체 업로드 취소 ⚠️
-  if (paymentErrors.length > 0 || orgUniformErrors.length > 0) {
+  if (nonPayableErrors.length > 0 || paymentErrors.length > 0 || orgUniformErrors.length > 0) {
     // 이미 적용된 payments 데이터 롤백
     State.students.forEach(function(st) {
       var sem = State.semesters.find(function(s) { return s.id === State.currentSemId; });
@@ -2256,6 +2342,70 @@ function updatePaymentSemBar() {
     ? '<span style="font-size:11px;color:var(--text-secondary)">학기: <b style="color:var(--accent-blue)">' + sem.year + '년 ' + sem.sem + '학기</b></span>'
     : '<span style="font-size:11px;color:var(--text-muted)">학기를 먼저 선택하세요</span>';
 }
+
+// 지급기준 배지 색상: 일반 / TA / 초과 / 파견을 성격별로 구분
+function getPaymentStandardBadgeClass(label) {
+  var s = String(label || '');
+  if (s.indexOf('파견') >= 0) return 'pay-standard-dispatch';
+  if (s.indexOf('초과') >= 0) return 'pay-standard-over';
+  if (s.indexOf('TA') >= 0) return 'pay-standard-ta';
+  return 'pay-standard-normal';
+}
+
+// 현재 입력된 산단 재원을 기준으로 이공계 자동계산 금액을 요약
+function getTopupSummary(st, semId, months) {
+  var values = months.map(function(mo) { return computeTopup(st, semId, mo.month); });
+  var positive = values.filter(function(v) { return v > 0; });
+  var total = values.reduce(function(a, b) { return a + b; }, 0);
+  if (total <= 0 || positive.length === 0) return { total:0, html:'' };
+
+  var first = positive[0];
+  var same = positive.every(function(v) { return v === first; });
+  var txt;
+  if (same) {
+    txt = '이공계 자동 · ' + fmt(first) + '원/월 × ' + positive.length + '개월 = ' + fmt(total) + '원';
+  } else {
+    txt = '이공계 자동 · 총 ' + fmt(total) + '원 · 월별 상이';
+  }
+  return {
+    total: total,
+    values: values,
+    html: '<span class="pay-badge pay-status-topup">' + txt + '</span>'
+  };
+}
+
+// 초과 / 기관계정 / 이공계 자동계산은 서로 배타적인 상태가 아니므로 각각 독립적으로 표시
+function buildPaymentStatusHtml(st, semId, months) {
+  var parts = [];
+  var paymentStandardAmount = getPaymentStandardAmount(st);
+  var isDispatch = st.status === '파견' || st.criteria === '파견' || paymentStandardAmount <= 0;
+  var hasOrg = months.some(function(mo) { return getPayment(semId, st.id, 'org', mo.month) > 0; });
+
+  if (isDispatch) {
+    parts.push('<span class="pay-badge pay-status-dispatch">파견 · 지급불가</span>');
+  }
+  if (isOver(st)) {
+    parts.push('<span class="pay-badge pay-status-over">교비제한: 초과자</span>');
+  }
+  if (hasOrg) {
+    parts.push('<span class="pay-badge pay-status-org">⚠ 기관계정</span>');
+  }
+
+  var topup = getTopupSummary(st, semId, months);
+  if (topup.html) parts.push(topup.html);
+
+  return parts.join('');
+}
+
+// 산단 재원을 추가/수정/삭제할 때 접힌 학생 헤더의 상태·이공계 금액도 즉시 갱신
+function refreshStudentBanner(semId, studentId) {
+  var sem = State.semesters.find(function(s) { return s.id === semId; });
+  var st = State.students.find(function(s) { return s.id === studentId; });
+  var el = document.getElementById('paystatus-' + studentId);
+  if (!sem || !st || !el) return;
+  el.innerHTML = buildPaymentStatusHtml(st, semId, getSemMonths(sem.year, sem.sem));
+}
+
 function renderPaymentPanel() {
   updatePaymentSemBar();
   var el = document.getElementById('paymentContent');
@@ -2275,27 +2425,16 @@ function renderPaymentPanel() {
     var track    = getTrack(st);
     var isPaused = st.status === '파견';
     var base     = track === 'MA' ? Config.topMA_base : Config.topDR_base;
-    var trackLabel = track === 'MA' ? '석사' : '박사';
     var paymentStandardAmount = getPaymentStandardAmount(st);
     var paymentStandardLabel = st.criteria || '미지정';
-
-    // 확약서 합계 (ind + org)
-    var hasAny = months.some(function(mo) {
-      return getPayment(semId, st.id, 'ind', mo.month) > 0 ||
-             getPayment(semId, st.id, 'org', mo.month) > 0;
+    var paymentBadgeClass = getPaymentStandardBadgeClass(paymentStandardLabel);
+    var topupTrackClass = track === 'MA' ? 'topup-track-ma' : 'topup-track-dr';
+    // 기관계정 여부는 헤더 상태표시뿐 아니라 펼친 화면의 경고문에도 사용하므로
+    // 학생별 렌더링 범위에서 별도로 계산해 둡니다.
+    var hasOrg = months.some(function(mo) {
+      return getPayment(semId, st.id, 'org', mo.month) > 0;
     });
-    var hasOrg = months.some(function(mo) { return getPayment(semId, st.id, 'org', mo.month) > 0; });
-
-    // 산단 합계 (ind + org + 추가 산단 재원)
-    var sandanTotal = months.reduce(function(a, mo) { return a + getSandanSum(semId, st, mo.month); }, 0);
-    var topupTotal  = months.reduce(function(a, mo) { return a + computeTopup(st, semId, mo.month); }, 0);
-
-    // 상태 요약 태그
-    var statusTag = '';
-    if (isPaused)      statusTag = '<span class="badge badge-block" style="margin-left:6px">파견</span>';
-    else if (isOver(st)) statusTag = '<span class="chip chip-over" style="margin-left:6px">초과</span>';
-    else if (hasOrg)   statusTag = '<span style="margin-left:6px;font-size:10px;color:#f87171">⚠기관계정</span>';
-    else if (topupTotal > 0) statusTag = '<span style="margin-left:6px;font-size:10px;color:#34d399">이공계+' + fmt(topupTotal) + '</span>';
+    var statusTag = buildPaymentStatusHtml(st, semId, months);
 
     // ── 아코디언 헤더 (클릭으로 펼치기) ──────────────────────
     html += '<div class="card" id="paycard-' + st.id + '" style="margin-bottom:10px;padding:0;overflow:hidden">';
@@ -2306,18 +2445,25 @@ function renderPaymentPanel() {
     html += '<span class="chip chip-' + st.course.toLowerCase() + '">' + st.course + '</span>';
     html += '<b style="font-size:13px">' + escapeHtml(st.name) + '</b>';
     html += '<span class="mono" style="font-size:10px;color:var(--text-muted)">' + st.id + '</span>';
-    html += '<span style="font-size:11px;color:var(--text-muted)">학기수:' + st.semCount + ' | 트랙:' + track + '</span>';
-    html += '<span class="badge badge-purple" style="font-size:10px">지급기준: ' + escapeHtml(paymentStandardLabel) + ' (' + fmt(paymentStandardAmount) + '원)</span>';
-    html += '<span class="badge badge-info" style="font-size:10px">이공계: ' + trackLabel + ' (' + fmt(base) + '원)</span>';
-    html += statusTag;
-    // 재원 추가 드롭다운 (헤더 오른쪽)
+    html += '<span style="font-size:11px;color:var(--text-muted)">학기수:' + st.semCount + ' | 이공계track:' + track + '</span>';
+    html += '<span class="pay-badge ' + paymentBadgeClass + '">지급기준: ' + escapeHtml(paymentStandardLabel) + ' · ' + fmt(paymentStandardAmount) + '원</span>';
+    html += '<span class="pay-badge ' + topupTrackClass + '">이공계 ' + track + ' · ' + fmt(base) + '원</span>';
+    html += '<span id="paystatus-' + st.id + '" class="pay-status-wrap">' + statusTag + '</span>';
+    // 재원 추가 드롭다운 (헤더 오른쪽) — 기준금액 0원 학생은 입력 차단
     html += '<div style="margin-left:auto" onclick="event.stopPropagation()">';
-    html += buildAddSourceDropdown(semId, st.id);
+    if (paymentStandardAmount <= 0 || st.status === '파견') {
+      html += '<button disabled style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.08);color:#f87171;cursor:not-allowed">지급입력 불가</button>';
+    } else {
+      html += buildAddSourceDropdown(semId, st.id);
+    }
     html += '</div>';
     html += '</div>'; // /header bar
 
     // ── 펼쳐지는 내용 (기본 접힘) ────────────────────────────
     html += '<div id="paybody-wrap-' + st.id + '" style="display:none;padding:0 16px 14px">';
+    if (paymentStandardAmount <= 0 || st.status === '파견') {
+      html += '<div class="alert alert-block" style="margin-bottom:10px"><span class="alert-icon">🚫</span>지급기준금액이 0원인 파견 학생은 학생인건비 확약 및 기타 재원 지급입력이 모두 불가합니다.</div>';
+    }
 
     // 테이블
     html += '<div style="overflow-x:auto"><table class="tbl" id="paytbl-' + st.id + '" style="font-size:12px">';
@@ -2486,14 +2632,165 @@ function getSandanSum(semId, st, month) {
   return sum;
 }
 
+// ── 과제번호 / 계정명 메타데이터 ─────────────────────────────
+function getSourceMeta(semId, studentId, sourceKey) {
+  if (!State.sourceMeta) State.sourceMeta = {};
+  if (!State.sourceMeta[semId]) State.sourceMeta[semId] = {};
+  if (!State.sourceMeta[semId][studentId]) State.sourceMeta[semId][studentId] = {};
+  if (!State.sourceMeta[semId][studentId][sourceKey]) {
+    State.sourceMeta[semId][studentId][sourceKey] = { projectNo:'', accountName:'' };
+  }
+  var meta = State.sourceMeta[semId][studentId][sourceKey];
+
+  // 확약서 기반 학생인건비는 WBS를 자동 취합한다.
+  if ((sourceKey === 'ind' || sourceKey === 'org') && !meta.projectNo) {
+    var wbsList = [];
+    var accountNames = [];
+    State.pledges.forEach(function(p) {
+      if (p.semId === semId && p.studentId === studentId && p.type === sourceKey) {
+        if (p.wbs && wbsList.indexOf(p.wbs) === -1) wbsList.push(p.wbs);
+        if (p.accountName && accountNames.indexOf(p.accountName) === -1) accountNames.push(p.accountName);
+      }
+    });
+    meta.projectNo = wbsList.join(' / ');
+    // 업로드 파일에 실제 '계정명' 컬럼이 있는 경우에만 자동 반영
+    if (!meta.accountName && accountNames.length) meta.accountName = accountNames.join(' / ');
+  }
+  return meta;
+}
+
+function getSourceCodeForMeta(semId, studentId, sourceKey) {
+  if (sourceKey === 'ind' || sourceKey === 'org' || sourceKey === 'topup') return sourceKey;
+  var rows = (State.studentSources[semId] && State.studentSources[semId][studentId]) || [];
+  var row = rows.find(function(r){ return r.key === sourceKey; });
+  return row ? row.src : sourceKey;
+}
+
+function getSourceMetaUiConfig(src) {
+  if (src === 'univ') {
+    return {
+      titlePrefix: '📝 과제정보 입력',
+      buttonLabel: '✎ 과제정보',
+      field1Label: '과제번호',
+      field1Placeholder: '예: 4.0012345.00 형식',
+      field2Label: '계정명',
+      field2Placeholder: '예: 인건비, 학생인건비, 내부인건비 등'
+    };
+  }
+  if (src === 'univRes') {
+    return {
+      titlePrefix: '📝 과제정보 입력',
+      buttonLabel: '✎ 과제정보',
+      field1Label: '과제번호',
+      field1Placeholder: '예: 2.0012345.00 형식',
+      field2Label: '계정명',
+      field2Placeholder: '예: 인건비, 학생인건비, 내부인건비 등'
+    };
+  }
+  if (src === 'ext') {
+    return {
+      titlePrefix: '📝 지급정보 입력',
+      buttonLabel: '✎ 지급정보',
+      field1Label: '지급기관',
+      field1Placeholder: '예: 서울대학교 SRC 사업, KAIST 우수연구자교류지원사업 등',
+      field2Label: '연구책임자',
+      field2Placeholder: '예: 홍길동, 고길동 등'
+    };
+  }
+  if (src === 'fellow') {
+    return {
+      titlePrefix: '📝 지급정보 입력',
+      buttonLabel: '✎ 지급정보',
+      field1Label: '지급기관',
+      field1Placeholder: '예: 국립국제교육원, 경상북도 등',
+      field2Label: '장학금/Fellowship',
+      field2Placeholder: '예: GKS장학금, K-탑티어 등'
+    };
+  }
+  if (src === 'ind' || src === 'org') {
+    return {
+      titlePrefix: '📝 확약서 정보',
+      buttonLabel: '',
+      field1Label: 'WBS',
+      field1Placeholder: '',
+      field2Label: '계정명',
+      field2Placeholder: ''
+    };
+  }
+  return {
+    titlePrefix: '📝 재원정보',
+    buttonLabel: '',
+    field1Label: '정보1',
+    field1Placeholder: '',
+    field2Label: '정보2',
+    field2Placeholder: ''
+  };
+}
+
+function sourceMetaSummary(meta, src) {
+  var parts = [];
+  var cfg = getSourceMetaUiConfig(src);
+  if (meta && meta.projectNo) parts.push(cfg.field1Label + ': ' + escapeHtml(meta.projectNo));
+  if (meta && meta.accountName) parts.push(cfg.field2Label + ': ' + escapeHtml(meta.accountName));
+  return parts.length ? parts.join(' · ') : '';
+}
+
+function openSourceMetaModal(semId, studentId, sourceKey, sourceLabel) {
+  var src = getSourceCodeForMeta(semId, studentId, sourceKey);
+  var cfg = getSourceMetaUiConfig(src);
+  // 입력 UI가 필요 없는 재원(BK21/교비/학생인건비/이공계 등)은 열지 않음
+  if (!cfg.buttonLabel) return;
+
+  var meta = getSourceMeta(semId, studentId, sourceKey);
+  document.getElementById('modalTitle').textContent = cfg.titlePrefix + ' — ' + sourceLabel;
+  var body = '';
+  body += '<div class="form-row"><label class="form-label">' + escapeHtml(cfg.field1Label) + '</label>' +
+    '<input class="form-input" id="metaProjectNo" value="' + escapeHtml(meta.projectNo || '') + '" placeholder="' + escapeHtml(cfg.field1Placeholder) + '"></div>';
+  body += '<div class="form-row"><label class="form-label">' + escapeHtml(cfg.field2Label) + '</label>' +
+    '<input class="form-input" id="metaAccountName" value="' + escapeHtml(meta.accountName || '') + '" placeholder="' + escapeHtml(cfg.field2Placeholder) + '"></div>';
+  body += '<div style="margin-top:14px;text-align:right"><button class="btn btn-primary btn-sm" ' +
+    'onclick="saveSourceMeta(\'' + semId + '\',\'' + studentId + '\',\'' + sourceKey + '\')">💾 저장</button></div>';
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modal').classList.add('open');
+}
+
+function saveSourceMeta(semId, studentId, sourceKey) {
+  var src = getSourceCodeForMeta(semId, studentId, sourceKey);
+  var cfg = getSourceMetaUiConfig(src);
+  var meta = getSourceMeta(semId, studentId, sourceKey);
+  var p = document.getElementById('metaProjectNo');
+  var a = document.getElementById('metaAccountName');
+  meta.projectNo = p ? String(p.value || '').trim() : '';
+  meta.accountName = a ? String(a.value || '').trim() : '';
+
+  // 추가 재원 행에도 메타데이터를 함께 보관한다.
+  var rows = (State.studentSources[semId] && State.studentSources[semId][studentId]) || [];
+  var row = rows.find(function(r){ return r.key === sourceKey; });
+  if (row) {
+    row.projectNo = meta.projectNo;
+    row.accountName = meta.accountName;
+  }
+
+  var el = document.getElementById('sourcemeta-' + studentId + '-' + sourceKey);
+  if (el) el.innerHTML = sourceMetaSummary(meta, src);
+  closeModal();
+  toast((cfg.titlePrefix.indexOf('지급정보') >= 0 ? '지급정보' : '과제정보') + '가 저장되었습니다', 'ok');
+}
+
 // ── 고정 재원 행 (ind/org) — 값 있는 월만 표시, 모두 0이면 행 숨김 ──
 function buildFixedRow(semId, st, src, label, isSandan, months) {
   var rowTotal = months.reduce(function(a, mo) { return a + getPayment(semId, st.id, src, mo.month); }, 0);
   // 모두 0이면 빈 행이지만 DOM에는 유지 (접기 후 재오픈 시 확약서 업로드 반영)
   var rowBg = isSandan ? 'background:rgba(99,102,241,0.05)' : '';
   var h = '<tr id="fixedrow-' + st.id + '-' + src + '" style="' + rowBg + '">';
+  var meta = getSourceMeta(semId, st.id, src);
+  var metaSummary = sourceMetaSummary(meta, src);
   h += '<td style="color:var(--text-secondary);font-size:12px">' + label;
-  h += ' <span style="font-size:9px;color:var(--text-muted)">[확약서]</span></td>';
+  h += ' <span style="font-size:9px;color:var(--text-muted)">[확약서]</span>';
+  if (metaSummary) {
+    h += '<div id="sourcemeta-' + st.id + '-' + src + '" style="font-size:9px;color:var(--text-muted);margin-top:3px;line-height:1.4">' + metaSummary + '</div>';
+  }
+  h += '</td>';
   months.forEach(function(mo) {
     var v = getPayment(semId, st.id, src, mo.month);
     h += '<td class="num"><input class="month-input locked" readonly ';
@@ -2518,6 +2815,15 @@ function buildAddedRow(semId, st, row, months) {
   h += 'color:#f87171;cursor:pointer;font-weight:800;font-size:13px;line-height:1">−</button>';
   h += escapeHtml(row.label);
   if (isSandan) h += ' <span style="font-size:9px;color:rgba(129,140,248,0.7)">[산단]</span>';
+  var meta = getSourceMeta(semId, st.id, row.key);
+  if (!meta.projectNo && row.projectNo) meta.projectNo = row.projectNo;
+  if (!meta.accountName && row.accountName) meta.accountName = row.accountName;
+  var metaCfg = getSourceMetaUiConfig(row.src);
+  if (metaCfg.buttonLabel) {
+    h += ' <button type="button" onclick="event.stopPropagation();openSourceMetaModal(\'' + semId + '\',\'' + st.id + '\',\'' + row.key + '\',\'' + escapeHtml(row.label) + '\')" ';
+    h += 'style="margin-left:6px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);background:var(--bg-card2);color:var(--text-muted);cursor:pointer;font-size:9px">' + metaCfg.buttonLabel + '</button>';
+    h += '<div id="sourcemeta-' + st.id + '-' + row.key + '" style="font-size:9px;color:var(--text-muted);margin-top:3px;line-height:1.4">' + sourceMetaSummary(meta, row.src) + '</div>';
+  }
   h += '</td>';
   var rowTotal = 0;
   months.forEach(function(mo) {
@@ -2561,6 +2867,13 @@ function addSourceRow(semId, studentId, srcCode) {
   // ── 입력 차단 체크 ─────────────────────────────────────────
   var stChk = State.students.find(function(s) { return s.id === studentId; });
   
+  // 지급기준금액 0원 / 파견 학생은 어떤 재원도 추가할 수 없음
+  if (stChk && (getPaymentStandardAmount(stChk) <= 0 || stChk.status === '파견')) {
+    showPayAlert('⛔ 지급입력 불가',
+      stChk.name + '은(는) 지급기준 "' + (stChk.criteria || '-') + '" / 기준금액 ' + fmt(getPaymentStandardAmount(stChk)) + '원으로\n어떤 재원도 추가하거나 지급할 수 없습니다.');
+    return;
+  }
+  
   // 입력 차단 체크 완료
 
   // 규정 1: 교비 — 초과자/수료(연구생) 차단
@@ -2592,7 +2905,7 @@ function addSourceRow(semId, studentId, srcCode) {
   });
   if (!menuItem) return;
 
-  var row = { key:key, src:srcCode, label:menuItem.label, isSandan:menuItem.isSandan };
+  var row = { key:key, src:srcCode, label:menuItem.label, isSandan:menuItem.isSandan, projectNo:'', accountName:'' };
   State.studentSources[semId][studentId].push(row);
 
   // 카드가 접혀있으면 열기
@@ -2649,6 +2962,9 @@ function removeSourceRow(semId, studentId, key) {
   if (State.payments[semId] && State.payments[semId][studentId]) {
     delete State.payments[semId][studentId][key];
   }
+  if (State.sourceMeta && State.sourceMeta[semId] && State.sourceMeta[semId][studentId]) {
+    delete State.sourceMeta[semId][studentId][key];
+  }
   var rowEl = document.getElementById('payrow-' + key);
   if (rowEl) rowEl.parentNode.removeChild(rowEl);
 
@@ -2666,6 +2982,15 @@ function setPaymentRow(semId, studentId, key, month, val) {
 
   var rowObj = ((State.studentSources[semId] || {})[studentId] || [])
                .find(function(r){ return r.key === key; });
+
+  // 지급기준금액 0원 / 파견 학생은 모든 수동 입력 차단
+  if (getPaymentStandardAmount(st) <= 0 || st.status === '파견') {
+    showPayAlert('⛔ 지급입력 불가',
+      st.name + '은(는) 지급기준 "' + (st.criteria || '-') + '" / 기준금액 ' + fmt(getPaymentStandardAmount(st)) + '원으로\n지급액을 입력할 수 없습니다.');
+    var blockedEl = document.querySelector('[data-sid="' + studentId + '"][data-src="' + key + '"][data-month="' + month + '"]');
+    if (blockedEl) blockedEl.value = '';
+    return;
+  }
 
   // ── 규정 1: 교비 — 초과자/수료(연구생) 입력 차단 ──────────
   if (rowObj && rowObj.src === 'kyob') {
@@ -3076,6 +3401,9 @@ function refreshPayTotals(semId, st, months) {
       ? 'margin-top:10px;padding:10px 14px;border-radius:7px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.08)'
       : '';
   }
+
+  // 접힌 학생 헤더의 상태 배지와 이공계 자동계산 요약도 현재 값으로 실시간 갱신
+  refreshStudentBanner(semId, st.id);
 }
 
 // ── computeStudentMonthTotal ──────────────────────────────────
@@ -3209,11 +3537,11 @@ function proceedDownload(sem) {
   
   // 컬럼 너비 설정
   wsSummary['!cols'] = [
-    {wch:25},  // A: 재원명
-    {wpx:110}, // B: 예산
-    {wpx:110}, // C: 집행액
-    {wpx:110}, // D: 잔여
-    {wch:12}   // E: 상태
+    {wpx:195}, // A
+    {wpx:165}, // B
+    {wpx:165}, // C
+    {wpx:165}, // D
+    {wpx:165}  // E
   ];
   
   // 금액 서식 (B6:D20)
@@ -3237,13 +3565,14 @@ function proceedDownload(sem) {
   // ============================================================
   // [상세] 시트 — 새 구조
   // A:지도교수 B:학번 C:이름 D:과정 E:학기수 F:학적상태 G:지급기준
-  // H:이공계인정학위과정 I:기준금액 J:재원 K:과제번호 L:계정명
+  // H:이공계인정학위과정 I:기준금액 J:재원
+  // K:과제번호/지급기관 L:계정명/연구책임자/장학금·Fellowship
   // M~R:3~8월(혹은 9~2월) S:계
   // ============================================================
   var detailHdr = [
     '지도교수','학번','이름','과정','학기수','학적상태','지급기준',
     '이공계 인정 학위과정','기준금액',
-    '재원','과제번호','계정명'
+    '재원','과제번호/지급기관','계정명/연구책임자/장학금·Fellowship'
   ].concat(monthHeaders).concat(['계']);
 
   var detailRows = [detailHdr];
@@ -3260,12 +3589,24 @@ function proceedDownload(sem) {
     var srcList = [];
     var hasInd = months.some(function(mo){ return getPayment(semId, st.id, 'ind', mo.month) > 0; });
     var hasOrg = months.some(function(mo){ return getPayment(semId, st.id, 'org', mo.month) > 0; });
-    if (hasInd) srcList.push({ key:'ind',    label:'학생인건비(개별)' });
-    if (hasOrg) srcList.push({ key:'org',    label:'학생인건비(기관)' });
-    addedRows.forEach(function(row) { srcList.push({ key: row.key, label: SRC_SHORT[row.src] || row.src }); });
+    if (hasInd) {
+      var metaInd = getSourceMeta(semId, st.id, 'ind');
+      srcList.push({ key:'ind', label:'학생인건비(개별)', projectNo:metaInd.projectNo, accountName:metaInd.accountName });
+    }
+    if (hasOrg) {
+      var metaOrg = getSourceMeta(semId, st.id, 'org');
+      srcList.push({ key:'org', label:'학생인건비(기관)', projectNo:metaOrg.projectNo, accountName:metaOrg.accountName });
+    }
+    addedRows.forEach(function(row) {
+      var metaRow = getSourceMeta(semId, st.id, row.key);
+      srcList.push({ key: row.key, label: SRC_SHORT[row.src] || row.src, projectNo:metaRow.projectNo || row.projectNo || '', accountName:metaRow.accountName || row.accountName || '' });
+    });
     var topupVals = months.map(function(mo){ return computeTopup(st, semId, mo.month); });
     var hasTopup  = topupVals.some(function(v){ return v > 0; });
-    if (hasTopup) srcList.push({ key:'__topup__', label:'이공계' });
+    if (hasTopup) {
+      var metaTopup = getSourceMeta(semId, st.id, 'topup');
+      srcList.push({ key:'__topup__', label:'이공계', projectNo:metaTopup.projectNo, accountName:metaTopup.accountName });
+    }
 
     srcList.forEach(function(src, si) {
       // A~I: 모든 행에 학생 정보 표시 (SUMIFS를 위해)
@@ -3290,8 +3631,8 @@ function proceedDownload(sem) {
       }
       var rowSum = moVals.reduce(function(a,b){ return a+b; }, 0);
 
-      // J: 재원, K: 과제번호(공란), L: 계정명(공란)
-      var jkl = [src.label, '', ''];
+      // J: 재원, K: 과제번호, L: 계정명
+      var jkl = [src.label, src.projectNo || '', src.accountName || ''];
 
       detailRows.push(prefix.concat(jkl).concat(moVals).concat([rowSum]));
     });
@@ -3316,8 +3657,8 @@ function proceedDownload(sem) {
     }
   }
 
-  // 컬럼 너비
-  wsDetail['!cols'] = [
+  // 컬럼 너비: A~I 기존 가독성 유지, J~AL은 85px 고정
+  var detailCols = [
     {wch:10}, // A 지도교수
     {wch:12}, // B 학번
     {wch:9},  // C 이름
@@ -3326,13 +3667,10 @@ function proceedDownload(sem) {
     {wch:13}, // F 학적상태
     {wch:11}, // G 지급기준
     {wch:16}, // H 이공계인정학위과정
-    {wch:11}, // I 기준금액
-    {wch:11}, // J 재원
-    {wch:13}, // K 과제번호
-    {wch:13}, // L 계정명
-    {wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9}, // M~R 월
-    {wch:11}, // S 계
+    {wch:11}  // I 기준금액
   ];
+  for (var dc = 9; dc <= 37; dc++) detailCols[dc] = {wpx:85}; // J~AL
+  wsDetail['!cols'] = detailCols;
 
   applySheetFont(wsDetail);
   XLSX.utils.book_append_sheet(wb, wsDetail, '지급내역');
@@ -3368,7 +3706,7 @@ function proceedDownload(sem) {
   State.students.forEach(function(st, idx) {
     var track = getTrack(st);
     var guide = getPaymentStandardAmount(st);
-    var row = [idx+1, st.id, '', st.name, st.course, track, st.semCount, st.status, st.criteria, guide];
+    var row = [idx+1, st.id, st.advisor || '', st.name, st.course, track, st.semCount, st.status, st.criteria, guide];
     
     // K~Q: 월별 총 지원금액 (6개월 + 소계)
     months.forEach(function(mo, mi) {
@@ -3425,13 +3763,11 @@ function proceedDownload(sem) {
   // 폰트 적용
   applySheetFont(wsSummary2);
   
-  // 컬럼 너비 설정
+  // 컬럼 너비 설정: A~I는 기존 가독성 유지, J~AL은 85px 고정
   var cols = [
-    {wch:5},{wch:10},{wch:10},{wch:8},{wch:8},{wch:8},{wch:6},{wch:10},{wch:10},{wch:12}
+    {wch:5},{wch:10},{wch:10},{wch:8},{wch:8},{wch:8},{wch:6},{wch:10},{wch:10}
   ];
-  for (var i = 0; i < months.length * 4 + 4; i++) {
-    cols.push({wpx:105});  // J~AL열: 105픽셀
-  }
+  for (var sc = 9; sc <= 37; sc++) cols[sc] = {wpx:85}; // J~AL
   wsSummary2['!cols'] = cols;
   
   // 금액 컬럼 형식 (J~AL열, 모든 행)
@@ -3445,9 +3781,11 @@ function proceedDownload(sem) {
   
   XLSX.utils.book_append_sheet(wb, wsSummary2, '요약');
 
-
-
-
+  // 모든 시트의 모든 사용 셀을 최종 단계에서 10pt로 통일
+  // (예산check의 수식 셀처럼 시트 생성 후 추가된 셀까지 포함)
+  wb.SheetNames.forEach(function(sheetName) {
+    applySheetFont(wb.Sheets[sheetName]);
+  });
 
   var fname = '조교수당_'+sem.year+'_'+sem.sem+'학기_'+new Date().toISOString().slice(0,10)+'.xlsx';
   try {
@@ -3470,7 +3808,8 @@ function applySheetFont(ws) {
       var addr = XLSX.utils.encode_cell({r:R, c:C});
       if (!ws[addr]) continue;
       if (!ws[addr].s) ws[addr].s = {};
-      ws[addr].s.font = { name: '맑은 고딕', sz: 10 };
+      var prevFont = ws[addr].s.font || {};
+      ws[addr].s.font = Object.assign({}, prevFont, { name: prevFont.name || '맑은 고딕', sz: 10 });
     }
   }
 }
@@ -3761,6 +4100,27 @@ function runTests() {
     }},
     { name:'T35: 지급기준 업로드 금액 우선 표시', fn: function() {
       return getPaymentStandardAmount({course:'DR',semCount:5,criteria:'박사초과',guideAmount:1610670})===1610670;
+    }},
+    { name:'T36: 지급기준 파견(기준금액 0원) → topup 0', fn: function() {
+      var st={id:'t',name:'T',course:'DR',semCount:3,status:'재학',criteria:'파견',guideAmount:0};
+      State.payments['test']={t:{ind:{1:400000},org:{1:0}}};
+      return getPaymentStandardAmount(st)===0 && computeTopup(st,'test',1)===0;
+    }},
+    { name:'T37: 나애리형(MP 9학기·수료·지급기준 파견·기준금액 0원) → topup 0', fn: function() {
+      var st={id:'t',name:'T',course:'MP',semCount:9,status:'수료(연구생)',criteria:'파견',guideAmount:0};
+      State.payments['test']={t:{ind:{1:900000},org:{1:0}}};
+      return getPaymentStandardAmount(st)===0 && computeTopup(st,'test',1)===0;
+    }},
+    { name:'T38: 과제정보 필수 대상은 본교산단/대학회계만', fn: function() {
+      return requiresSourceMeta('univ') && requiresSourceMeta('univRes') && !requiresSourceMeta('kyob') &&
+             !requiresSourceMeta('bk') && !requiresSourceMeta('ext') && !requiresSourceMeta('fellow');
+    }},
+    { name:'T39: 재원별 입력 UI 라벨/예시', fn: function() {
+      var u=getSourceMetaUiConfig('univ'), ur=getSourceMetaUiConfig('univRes');
+      var e=getSourceMetaUiConfig('ext'), f=getSourceMetaUiConfig('fellow');
+      return u.field1Placeholder==='예: 4.0012345.00 형식' && ur.field1Placeholder==='예: 2.0012345.00 형식' &&
+             e.field1Label==='지급기관' && e.field2Label==='연구책임자' &&
+             f.field1Label==='지급기관' && f.field2Label==='장학금/Fellowship';
     }},
   ];
 
