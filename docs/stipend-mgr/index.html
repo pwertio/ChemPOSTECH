@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>포스텍 화학과 대학원생 조교수당 통합계산 및 신청서</title>
-<!-- v8: 지급입력 hasOrg 렌더링 오류 수정 -->
+<!-- v13: 학기 선택 UX, 팝업 키보드 접근성, Excel 서식/틀고정 보강 -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.min.js';"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/jszip@3.10.1/dist/jszip.min.js';"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -509,12 +510,11 @@
       <div class="card">
         <div class="card-title">학기 추가</div>
         <div class="form-row">
-          <label class="form-label">학년도</label>
-          <input class="form-input" id="newYear" type="number" value="2026" min="2020" max="2040" style="max-width:100px">
-          <label class="form-label" style="min-width:40px">학기</label>
-          <select class="form-select" id="newSem" style="max-width:100px">
-            <option value="1">1학기</option>
-            <option value="2">2학기</option>
+          <label class="form-label">학기</label>
+          <select class="form-select" id="semesterPreset" style="max-width:180px">
+            <option value="2026_1">2026년 1학기</option>
+            <option value="2026_2" selected>2026년 2학기</option>
+            <option value="2027_1">2027년 1학기</option>
           </select>
           <button class="btn btn-primary btn-sm" onclick="addSemester()">+ 추가</button>
         </div>
@@ -984,7 +984,12 @@ var SOURCE_LABELS = { bk:'BK21', ind:'학생인건비(개별)', org:'학생인�
 // SECURITY UI — Privacy Modal & Clear Confirm
 // ============================================================
 function showPrivacyModal() {
-  document.getElementById('privacyOverlay').classList.add('open');
+  var overlay = document.getElementById('privacyOverlay');
+  overlay.classList.add('open');
+  setTimeout(function() {
+    var check = document.getElementById('pvCheck');
+    if (check) check.focus();
+  }, 50);
 }
 function closePrivacyModal() {
   if (!document.getElementById('pvCheck').checked) return;
@@ -999,7 +1004,14 @@ function onPrivacyCheck() {
   btn.style.cursor  = checked ? 'pointer' : 'not-allowed';
 }
 
-function showClearConfirm() { document.getElementById('clearOverlay').classList.add('open'); }
+function showClearConfirm() {
+  var overlay = document.getElementById('clearOverlay');
+  overlay.classList.add('open');
+  setTimeout(function() {
+    var btn = overlay.querySelector('.btn-secondary');
+    if (btn) btn.focus();
+  }, 50);
+}
 function closeClearConfirm() { document.getElementById('clearOverlay').classList.remove('open'); }
 
 function confirmClearAll() {
@@ -1102,6 +1114,178 @@ function toast(msg, type) {
   setTimeout(function() { el.remove(); }, 3500);
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ============================================================
+// 공통 팝업 키보드 접근성
+// - Tab / Shift+Tab: 팝업 내부 포커스 순환
+// - Enter / Space: 현재 선택된 버튼 실행
+// - 입력창에서 Enter: primary 버튼이 있으면 실행
+// - Escape: 안전하게 닫을 수 있는 팝업만 닫기
+// ============================================================
+function isPopupVisible(el) {
+  if (!el) return false;
+  if (el.classList && el.classList.contains('open')) return true;
+  var cs = window.getComputedStyle(el);
+  return cs.display !== 'none' && cs.visibility !== 'hidden';
+}
+
+function getActivePopupRoot() {
+  var ids = [
+    'generic-confirm-overlay',
+    'download-confirm-overlay',
+    'pay-alert-overlay',
+    'autofill-overlay',
+    'modal',
+    'upload-result-overlay',
+    'clearOverlay',
+    'privacyOverlay'
+  ];
+  for (var i = 0; i < ids.length; i++) {
+    var el = document.getElementById(ids[i]);
+    if (isPopupVisible(el)) return el;
+  }
+  return null;
+}
+
+function getPopupFocusable(root) {
+  if (!root) return [];
+  return Array.prototype.slice.call(root.querySelectorAll(
+    'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )).filter(function(el) {
+    var cs = window.getComputedStyle(el);
+    return cs.display !== 'none' && cs.visibility !== 'hidden';
+  });
+}
+
+function closePopupByEscape(root) {
+  if (!root) return;
+  if (root.id === 'privacyOverlay') return; // 동의 전에는 닫지 않음
+  if (root.id === 'clearOverlay') { closeClearConfirm(); return; }
+  if (root.id === 'upload-result-overlay') { closeUploadResult(); return; }
+  if (root.id === 'modal') { closeModal(); return; }
+  if (root.id === 'pay-alert-overlay') { closePayAlert(); return; }
+  if (root.id === 'generic-confirm-overlay' && root.parentNode) { root.parentNode.removeChild(root); return; }
+  if (root.parentNode && (root.id === 'autofill-overlay' || root.id === 'download-confirm-overlay')) {
+    root.parentNode.removeChild(root);
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  var root = getActivePopupRoot();
+  if (!root) return;
+
+  var focusables = getPopupFocusable(root);
+  var active = document.activeElement;
+  var idx = focusables.indexOf(active);
+
+  if (e.key === 'Tab') {
+    if (!focusables.length) return;
+    e.preventDefault();
+    if (idx < 0) idx = e.shiftKey ? 0 : -1;
+    idx = (idx + (e.shiftKey ? -1 : 1) + focusables.length) % focusables.length;
+    focusables[idx].focus();
+    return;
+  }
+
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closePopupByEscape(root);
+    return;
+  }
+
+  var tag = active && active.tagName ? active.tagName.toLowerCase() : '';
+  var isTextInput = tag === 'textarea' || (tag === 'input' && active.type !== 'button' && active.type !== 'submit' && active.type !== 'checkbox' && active.type !== 'radio');
+
+  if (e.key === 'Enter') {
+    if (active && (tag === 'button' || active.type === 'button' || active.type === 'submit')) {
+      e.preventDefault();
+      active.click();
+      return;
+    }
+    if (isTextInput) {
+      var primary = root.querySelector('[data-popup-primary="true"]');
+      if (primary && !primary.disabled) {
+        e.preventDefault();
+        primary.click();
+      }
+      return;
+    }
+    if (active && (active.type === 'checkbox' || active.type === 'radio')) {
+      e.preventDefault();
+      active.click();
+      return;
+    }
+    if (focusables.length) {
+      e.preventDefault();
+      var primary2 = root.querySelector('[data-popup-primary="true"]') || focusables[0];
+      if (primary2 && typeof primary2.click === 'function') primary2.click();
+    }
+    return;
+  }
+
+  if (e.key === ' ') {
+    // 텍스트 입력란에서는 공백 입력을 그대로 허용
+    if (isTextInput || tag === 'textarea') return;
+    if (active && (tag === 'button' || active.type === 'checkbox' || active.type === 'radio')) {
+      e.preventDefault();
+      active.click();
+    }
+  }
+});
+
+// 공통 Y/N 확인 팝업 — native confirm 대신 사용
+function showConfirmDialog(title, msg, onYes, yesLabel, noLabel) {
+  var old = document.getElementById('generic-confirm-overlay');
+  if (old && old.parentNode) old.parentNode.removeChild(old);
+
+  var overlay = document.createElement('div');
+  overlay.id = 'generic-confirm-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.62);z-index:10020;display:flex;align-items:center;justify-content:center';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg-card);border:1px solid var(--border-bright);border-radius:12px;padding:26px 30px;max-width:470px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.7)';
+
+  var titleEl = document.createElement('div');
+  titleEl.style.cssText = 'font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text-primary)';
+  titleEl.textContent = title || '확인';
+
+  var msgEl = document.createElement('div');
+  msgEl.style.cssText = 'font-size:12px;color:var(--text-secondary);line-height:1.8;white-space:pre-line';
+  msgEl.textContent = msg || '';
+
+  var btnWrap = document.createElement('div');
+  btnWrap.style.cssText = 'margin-top:22px;display:flex;gap:10px;justify-content:flex-end';
+
+  var noBtn = document.createElement('button');
+  noBtn.className = 'btn btn-secondary';
+  noBtn.textContent = noLabel || '아니오';
+  noBtn.onclick = function(e) {
+    e.stopPropagation();
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+  };
+
+  var yesBtn = document.createElement('button');
+  yesBtn.className = 'btn btn-primary';
+  yesBtn.textContent = yesLabel || '예';
+  yesBtn.setAttribute('data-popup-primary', 'true');
+  yesBtn.onclick = function(e) {
+    e.stopPropagation();
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    if (typeof onYes === 'function') onYes();
+  };
+
+  btnWrap.appendChild(noBtn);
+  btnWrap.appendChild(yesBtn);
+  box.appendChild(titleEl);
+  box.appendChild(msgEl);
+  box.appendChild(btnWrap);
+  overlay.appendChild(box);
+  overlay.onclick = function(e) { if (e.target === overlay) noBtn.click(); };
+  document.body.appendChild(overlay);
+
+  // 파괴적/삭제 계열은 기본적으로 '아니오'에 포커스하여 오입력을 방지
+  setTimeout(function() { noBtn.focus(); }, 50);
+}
 
 // ============================================================
 // NAVIGATION
@@ -1583,9 +1767,12 @@ function renderValidation() {
 // SEMESTER
 // ============================================================
 function addSemester() {
-  var year = parseInt(document.getElementById('newYear').value);
-  var sem  = parseInt(document.getElementById('newSem').value);
-  if (!year || !sem) { toast('학년도/학기를 입력하세요', 'err'); return; }
+  var presetEl = document.getElementById('semesterPreset');
+  var preset = presetEl ? String(presetEl.value || '') : '';
+  var parts = preset.split('_');
+  var year = parseInt(parts[0], 10);
+  var sem  = parseInt(parts[1], 10);
+  if (!year || !sem) { toast('학기를 선택하세요', 'err'); return; }
   var id = year + '_' + sem;
   if (State.semesters.find(function(s) { return s.id === id; })) { toast('이미 등록된 학기입니다', 'err'); return; }
   State.semesters.push({ id: id, year: year, sem: sem, months: getSemMonths(year, sem) });
@@ -1678,16 +1865,23 @@ function deleteStudent(id) {
 }
 
 function clearStudents() {
-  if (!confirm('학생 목록과 각 학생에 연결된 지급·확약서 자료를 모두 삭제하시겠습니까?')) return;
-  State.students.forEach(function(st) { purgeStudentData(st.id); });
-  State.students = [];
-  State.validationResult = { blocks:[], warns:[] };
-  renderStudentTable();
-  renderValidation();
-  updateSidebarStats();
-  updateDashboard();
-  if (document.getElementById('panel-payment').classList.contains('active')) renderPaymentPanel();
-  toast('학생 목록과 연결 자료가 모두 삭제되었습니다', 'warn');
+  showConfirmDialog(
+    '학생 목록 전체 삭제',
+    '학생 목록과 각 학생에 연결된 지급·확약서 자료를 모두 삭제하시겠습니까?',
+    function() {
+      State.students.forEach(function(st) { purgeStudentData(st.id); });
+      State.students = [];
+      State.validationResult = { blocks:[], warns:[] };
+      renderStudentTable();
+      renderValidation();
+      updateSidebarStats();
+      updateDashboard();
+      if (document.getElementById('panel-payment').classList.contains('active')) renderPaymentPanel();
+      toast('학생 목록과 연결 자료가 모두 삭제되었습니다', 'warn');
+    },
+    '예, 모두 삭제',
+    '아니오, 취소'
+  );
 }
 
 function renderStudentTable() {
@@ -1837,7 +2031,12 @@ function showUploadResult(added, skipped, details, total) {
   }
 
   body.innerHTML = html;
-  document.getElementById('upload-result-overlay').classList.add('open');
+  var urOverlay = document.getElementById('upload-result-overlay');
+  urOverlay.classList.add('open');
+  setTimeout(function() {
+    var btn = urOverlay.querySelector('.ur-close-btn');
+    if (btn) btn.focus();
+  }, 50);
 }
 
 function closeUploadResult() {
@@ -2749,9 +2948,13 @@ function openSourceMetaModal(semId, studentId, sourceKey, sourceLabel) {
   body += '<div class="form-row"><label class="form-label">' + escapeHtml(cfg.field2Label) + '</label>' +
     '<input class="form-input" id="metaAccountName" value="' + escapeHtml(meta.accountName || '') + '" placeholder="' + escapeHtml(cfg.field2Placeholder) + '"></div>';
   body += '<div style="margin-top:14px;text-align:right"><button class="btn btn-primary btn-sm" ' +
-    'onclick="saveSourceMeta(\'' + semId + '\',\'' + studentId + '\',\'' + sourceKey + '\')">💾 저장</button></div>';
+    'data-popup-primary="true" onclick="saveSourceMeta(\'' + semId + '\',\'' + studentId + '\',\'' + sourceKey + '\')">💾 저장</button></div>';
   document.getElementById('modalBody').innerHTML = body;
   document.getElementById('modal').classList.add('open');
+  setTimeout(function() {
+    var firstInput = document.getElementById('metaProjectNo');
+    if (firstInput) firstInput.focus();
+  }, 50);
 }
 
 function saveSourceMeta(semId, studentId, sourceKey) {
@@ -2952,8 +3155,13 @@ function requestRemoveSourceRow(semId, studentId, key) {
   if (total > 0) {
     msg += '\n\n입력된 금액 ' + fmt(total) + '원도 함께 삭제됩니다.';
   }
-  if (!confirm(msg)) return;
-  removeSourceRow(semId, studentId, key);
+  showConfirmDialog(
+    '재원 삭제 확인',
+    msg,
+    function() { removeSourceRow(semId, studentId, key); },
+    '예, 삭제',
+    '아니오, 유지'
+  );
 }
 
 function removeSourceRow(semId, studentId, key) {
@@ -3119,6 +3327,7 @@ function showPayAlert(title, msg) {
 
   var btn = document.createElement('button');
   btn.textContent = '확인';
+  btn.setAttribute('data-popup-primary', 'true');
   btn.style.cssText = 'padding:6px 20px;border-radius:6px;border:1px solid var(--border-bright);background:var(--accent-indigo);color:#fff;cursor:pointer;font-size:12px';
   btn.onclick = function(e) { e.stopPropagation(); closePayAlert(); };
 
@@ -3132,6 +3341,7 @@ function showPayAlert(title, msg) {
   overlay.onclick = function(e) { if (e.target === overlay) closePayAlert(); };
 
   document.body.appendChild(overlay);
+  setTimeout(function() { btn.focus(); }, 50);
 }
 function closePayAlert() {
   var el = document.getElementById('pay-alert-overlay');
@@ -3172,6 +3382,7 @@ function showAutoFillPrompt(semId, studentId, key, firstMonth, amount, months, s
 
   var yesBtn = document.createElement('button');
   yesBtn.textContent = '예, 자동 입력';
+  yesBtn.setAttribute('data-popup-primary', 'true');
   yesBtn.style.cssText = 'padding:10px 24px;border-radius:6px;border:1px solid var(--accent-indigo);background:var(--accent-indigo);color:#fff;cursor:pointer;font-size:13px;font-weight:600;min-width:140px';
   yesBtn.onclick = function(e) {
     e.stopPropagation();
@@ -3237,26 +3448,8 @@ function showAutoFillPrompt(semId, studentId, key, firstMonth, amount, months, s
   document.body.appendChild(overlay);
   setTimeout(function() { yesBtn.focus(); }, 100);
   
-  // 키보드 네비게이션
-  var buttons = [yesBtn, noBtn];
-  var focusIdx = 0;
-  overlay.onkeydown = function(e) {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      focusIdx = (focusIdx + (e.shiftKey ? -1 : 1) + buttons.length) % buttons.length;
-      buttons[focusIdx].focus();
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      focusIdx = e.key === 'ArrowLeft' ? 0 : 1;
-      buttons[focusIdx].focus();
-    } else if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      buttons[focusIdx].click();
-    } else if (e.key === 'Escape') {
-      document.body.removeChild(overlay);
-    }
-  };
 }
+
 
 // 엑셀 다운로드 전 확인
 function showDownloadConfirm(sem) {
@@ -3283,6 +3476,7 @@ function showDownloadConfirm(sem) {
 
   var dashBtn = document.createElement('button');
   dashBtn.textContent = '대시보드 확인';
+  dashBtn.setAttribute('data-popup-primary', 'true');
   dashBtn.className = 'download-confirm-btn';
   dashBtn.style.cssText = 'padding:10px 24px;border-radius:6px;border:1px solid var(--accent-blue);background:var(--accent-blue);color:#fff;cursor:pointer;font-size:13px;font-weight:600;min-width:140px';
   dashBtn.onclick = function(e) { 
@@ -3312,28 +3506,8 @@ function showDownloadConfirm(sem) {
   document.body.appendChild(overlay);
   setTimeout(function() { dashBtn.focus(); }, 100);
   
-  // 키보드 네비게이션
-  var buttons = [dashBtn, downloadBtn];
-  var focusIdx = 0;
-  buttons[0].focus();
-  
-  overlay.onkeydown = function(e) {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      focusIdx = (focusIdx + (e.shiftKey ? -1 : 1) + buttons.length) % buttons.length;
-      buttons[focusIdx].focus();
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      focusIdx = e.key === 'ArrowLeft' ? 0 : 1;
-      buttons[focusIdx].focus();
-    } else if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      buttons[focusIdx].click();
-    } else if (e.key === 'Escape') {
-      document.body.removeChild(overlay);
-    }
-  };
 }
+
 
 
 
@@ -3470,13 +3644,120 @@ function downloadExcel() {
   showDownloadConfirm(sem);
 }
 
-function proceedDownload(sem) {
+// ── Excel 서식 공통 헬퍼 ────────────────────────────────────
+function ensureSheetCell(ws, r, c) {
+  var addr = XLSX.utils.encode_cell({ r:r, c:c });
+  if (!ws[addr]) ws[addr] = { t:'s', v:'' };
+  if (!ws[addr].s) ws[addr].s = {};
+  return ws[addr];
+}
+
+function applyThinBorderRange(ws, startRow, startCol, endRow, endCol) {
+  var border = {
+    top:    { style:'thin', color:{ rgb:'000000' } },
+    bottom: { style:'thin', color:{ rgb:'000000' } },
+    left:   { style:'thin', color:{ rgb:'000000' } },
+    right:  { style:'thin', color:{ rgb:'000000' } }
+  };
+  for (var r = startRow; r <= endRow; r++) {
+    for (var c = startCol; c <= endCol; c++) {
+      var cell = ensureSheetCell(ws, r, c);
+      cell.s.border = border;
+    }
+  }
+}
+
+function applyHeaderRangeStyle(ws, startRow, startCol, endRow, endCol, fillRgb, bold, center) {
+  for (var r = startRow; r <= endRow; r++) {
+    for (var c = startCol; c <= endCol; c++) {
+      var cell = ensureSheetCell(ws, r, c);
+      var prevFont = cell.s.font || {};
+      if (bold) cell.s.font = Object.assign({}, prevFont, { bold:true });
+      if (fillRgb) cell.s.fill = { patternType:'solid', fgColor:{ rgb:fillRgb } };
+      if (center) {
+        var prevAlign = cell.s.alignment || {};
+        cell.s.alignment = Object.assign({}, prevAlign, { horizontal:'center', vertical:'center' });
+      }
+    }
+  }
+}
+
+// xlsx-js-style은 셀 서식은 지원하지만 틀 고정 쓰기가 안정적이지 않아,
+// 생성된 XLSX의 worksheet XML에 freeze pane 정보를 추가합니다.
+function injectFreezePaneXml(xml, frozenRows) {
+  var topLeft = 'A' + (frozenRows + 1);
+  var paneXml = '<pane ySplit="' + frozenRows + '" topLeftCell="' + topLeft + '" activePane="bottomLeft" state="frozen"/>' +
+                '<selection pane="bottomLeft" activeCell="' + topLeft + '" sqref="' + topLeft + '"/>';
+
+  var selfClosingView = /<sheetView\b[^>]*\/>/;
+  if (selfClosingView.test(xml)) {
+    return xml.replace(/<sheetView\b([^>]*)\/>/, function(_, attrs) {
+      return '<sheetView' + attrs + '>' + paneXml + '</sheetView>';
+    });
+  }
+
+  var fullView = /<sheetView\b[^>]*>[\s\S]*?<\/sheetView>/;
+  if (fullView.test(xml)) {
+    return xml.replace(/<sheetView\b([^>]*)>([\s\S]*?)<\/sheetView>/, function(_, attrs, inner) {
+      inner = inner.replace(/<pane\b[^>]*\/>/g, '').replace(/<selection\b[^>]*\/>/g, '');
+      return '<sheetView' + attrs + '>' + paneXml + inner + '</sheetView>';
+    });
+  }
+
+  if (/<sheetViews>/.test(xml)) {
+    return xml.replace('<sheetViews>', '<sheetViews><sheetView workbookViewId="0">' + paneXml + '</sheetView>');
+  }
+
+  return xml.replace(/(<worksheet\b[^>]*>)/, '$1<sheetViews><sheetView workbookViewId="0">' + paneXml + '</sheetView></sheetViews>');
+}
+
+async function writeWorkbookWithFreezePanes(wb, fname) {
+  var raw = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+
+  // JSZip 로드 실패 시 서식/데이터 다운로드는 유지하고, 틀 고정만 생략
+  if (typeof JSZip === 'undefined') {
+    XLSX.writeFile(wb, fname);
+    toast('⚠ Excel 파일은 저장되었지만 틀 고정 기능을 적용하지 못했습니다.', 'warn');
+    return;
+  }
+
+  var zip = await JSZip.loadAsync(raw);
+  var freezeTargets = [
+    { path:'xl/worksheets/sheet2.xml', rows:1 }, // 지급내역: 1행 고정
+    { path:'xl/worksheets/sheet3.xml', rows:2 }  // 요약: 1~2행 고정
+  ];
+
+  for (var i = 0; i < freezeTargets.length; i++) {
+    var target = freezeTargets[i];
+    var entry = zip.file(target.path);
+    if (!entry) continue;
+    var xml = await entry.async('string');
+    zip.file(target.path, injectFreezePaneXml(xml, target.rows));
+  }
+
+  var blob = await zip.generateAsync({
+    type:'blob',
+    compression:'DEFLATE',
+    mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+async function proceedDownload(sem) {
   runValidation();
   if (State.validationResult.blocks.length > 0) {
     var blockMsgs = State.validationResult.blocks.map(function(b) {
       return '[' + b.student + '] ' + b.msg;
     }).join('\n');
-    alert('⛔ 다운로드 불가 — 조교수당 지급 규정 위반 ' + State.validationResult.blocks.length + '건\n\n' + blockMsgs);
+    showPayAlert('⛔ 다운로드 불가 — 규정 위반 ' + State.validationResult.blocks.length + '건', blockMsgs);
     toast('규정 위반 ' + State.validationResult.blocks.length + '건 해결 후 다운로드 가능합니다', 'err');
     return;
   }
@@ -3559,6 +3840,10 @@ function proceedDownload(sem) {
     var ca = XLSX.utils.encode_cell({r:R, c:4}); // E열
     wsSummary[ca] = { f: 'IF(D'+(R+1)+'>=0,"정상","예산초과")' };
   }
+
+  // A5:E14 테이블: 전체 얇은 직선 테두리 + 5행 헤더 강조
+  applyThinBorderRange(wsSummary, 4, 0, 13, 4);
+  applyHeaderRangeStyle(wsSummary, 4, 0, 4, 4, 'D9D9D9', true, false);
   
   XLSX.utils.book_append_sheet(wb, wsSummary, '예산check');
 
@@ -3672,6 +3957,13 @@ function proceedDownload(sem) {
   for (var dc = 9; dc <= 37; dc++) detailCols[dc] = {wpx:85}; // J~AL
   wsDetail['!cols'] = detailCols;
 
+  // 지급내역 A:S 전체 테이블 테두리 + 1행 헤더 강조
+  var detailLastRow = XLSX.utils.decode_range(wsDetail['!ref'] || 'A1:S1').e.r;
+  applyThinBorderRange(wsDetail, 0, 0, detailLastRow, 18);
+  applyHeaderRangeStyle(wsDetail, 0, 0, 0, 18, 'D9D9D9', true, false);
+  // xlsx-js-style 호환용 메타값(후처리에서도 실제 freeze pane 적용)
+  wsDetail['!freeze'] = 'A2';
+
   applySheetFont(wsDetail);
   XLSX.utils.book_append_sheet(wb, wsDetail, '지급내역');
   // ============================================================
@@ -3763,12 +4055,17 @@ function proceedDownload(sem) {
   // 폰트 적용
   applySheetFont(wsSummary2);
   
-  // 컬럼 너비 설정: A~I는 기존 가독성 유지, J~AL은 85px 고정
+  // 컬럼 너비 설정: A~I는 기존 가독성 유지, J~AL은 90px 고정
   var cols = [
     {wch:5},{wch:10},{wch:10},{wch:8},{wch:8},{wch:8},{wch:6},{wch:10},{wch:10}
   ];
-  for (var sc = 9; sc <= 37; sc++) cols[sc] = {wpx:85}; // J~AL
+  for (var sc = 9; sc <= 37; sc++) cols[sc] = {wpx:90}; // J~AL
   wsSummary2['!cols'] = cols;
+
+  // 요약 제목줄: 1행 대분류 = 가운데 정렬 + Bold + #D9D9D9, 2행 소분류 = #F2F2F2
+  applyHeaderRangeStyle(wsSummary2, 0, 0, 0, 37, 'D9D9D9', true, true);
+  applyHeaderRangeStyle(wsSummary2, 1, 0, 1, 37, 'F2F2F2', false, false);
+  wsSummary2['!freeze'] = 'A3';
   
   // 금액 컬럼 형식 (J~AL열, 모든 행)
   var rng2 = XLSX.utils.decode_range(wsSummary2['!ref'] || 'A1');
@@ -3789,7 +4086,7 @@ function proceedDownload(sem) {
 
   var fname = '조교수당_'+sem.year+'_'+sem.sem+'학기_'+new Date().toISOString().slice(0,10)+'.xlsx';
   try {
-    XLSX.writeFile(wb, fname);
+    await writeWorkbookWithFreezePanes(wb, fname);
     toast('✅ ' + fname + ' 다운로드 완료', 'ok');
     if (Security.autoClearOnDownload) {
       setTimeout(function() { confirmClearAll(); toast('데이터 자동 초기화 완료', 'ok'); }, 3000);
