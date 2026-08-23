@@ -117,6 +117,15 @@
   .btn-clear-all { width: 100%; background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.2); color: #f87171; border-radius: 6px; padding: 7px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; margin-top: 6px; }
   .btn-clear-all:hover { background: rgba(239,68,68,0.15); }
   .sidebar-mini { font-size: 10px; color: var(--text-muted); padding: 6px 8px; line-height: 1.6; }
+  .sidebar-manual { width:100%; box-sizing:border-box; margin:4px 0 8px; padding:8px 10px; border:1px solid rgba(59,130,246,0.35); border-radius:7px; background:rgba(59,130,246,0.08); color:var(--accent-blue); font-size:11px; font-weight:700; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:all .15s; }
+  .sidebar-manual:hover { background:rgba(59,130,246,0.14); border-color:rgba(59,130,246,0.55); }
+  .help-guide { font-size:12px; color:var(--text-secondary); line-height:1.75; }
+  .help-guide .help-step { margin:0 0 10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card2); }
+  .help-guide .help-step b { color:var(--text-primary); }
+  .help-guide .help-note { margin-top:10px; padding:10px 12px; border-radius:8px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); color:var(--text-secondary); }
+  .help-guide .help-tip { margin-top:10px; padding:10px 12px; border-radius:8px; background:rgba(59,130,246,0.07); border:1px solid rgba(59,130,246,0.20); color:var(--text-secondary); }
+  .help-guide ul { margin:6px 0 0 18px; padding:0; }
+  .help-guide li { margin:3px 0; }
 
   .main { flex: 1; overflow-y: auto; padding: 20px; min-width: 0; }
   .panel { display: none; }
@@ -466,6 +475,7 @@
     <div class="sidebar-item" onclick="switchPanel('unittest')"><span>🧪</span> 단위 테스트</div>
     <div class="sidebar-spacer"></div>
     <div class="sidebar-mini" id="sidebarInfo">학기: <b style="color:var(--accent-blue)">미선택</b><br>학생: 0명 | Block: 0</div>
+    <a class="sidebar-manual" href="TA_Payment_WebApp_User_Manual.pdf" download="TA_Payment_WebApp_User_Manual.pdf" title="전체 사용자 매뉴얼 PDF 다운로드">📘 사용자 매뉴얼 (PDF)</a>
     <button class="btn-clear-all" onclick="showClearConfirm()">🗑 데이터 전체 초기화</button>
   </aside>
 
@@ -479,7 +489,10 @@
           <div class="section-title">📊 대시보드</div>
           <div class="section-desc">전체 현황 및 검증 결과 요약</div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="runValidation()">🔍 전체 검증 실행</button>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="openHelpModal('dashboard')">📘 사용안내</button>
+          <button class="btn btn-primary btn-sm" onclick="runValidation()">🔍 전체 검증 실행</button>
+        </div>
       </div>
       <div class="grid-4" style="margin-bottom:14px">
         <div class="stat-card info"><div class="stat-label">등록 학생</div><div class="stat-value" id="ds-students">0</div><div class="stat-sub">명</div></div>
@@ -506,6 +519,7 @@
           <div class="section-title">📅 학기 설정</div>
           <div class="section-desc">계산 대상 학기를 추가·선택합니다</div>
         </div>
+        <button class="btn btn-secondary btn-sm" onclick="openHelpModal('semester')">📘 사용안내</button>
       </div>
       <div class="card">
         <div class="card-title">학기 추가</div>
@@ -538,6 +552,7 @@
           <div class="section-desc">조교수당 지급 대상 학생을 등록합니다</div>
         </div>
         <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="openHelpModal('students')">📘 사용안내</button>
           <button class="btn btn-secondary btn-sm" onclick="downloadStudentTemplate()">📥 템플릿</button>
           <label class="btn btn-primary btn-sm" style="cursor:pointer">
             📤 Excel 업로드 <input type="file" accept=".xlsx,.xls" style="display:none" onchange="uploadStudents(this)">
@@ -589,7 +604,10 @@
     <div class="panel" id="panel-budget">
       <div class="section-header">
         <div><div class="section-title">💰 예산 관리</div><div class="section-desc">재원별 예산을 입력하고 집행 현황을 확인합니다</div></div>
-        <button class="btn btn-primary btn-sm" onclick="saveBudget()">💾 저장</button>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="openHelpModal('budget')">📘 사용안내</button>
+          <button class="btn btn-primary btn-sm" onclick="saveBudget()">💾 저장</button>
+        </div>
       </div>
       <div class="grid-2">
         <div class="card">
@@ -629,7 +647,10 @@
           <div class="section-title">📋 확약서 업로드</div>
           <div class="section-desc">학생인건비 확약서 업로드 — WBS 번호로 개별/기관 계정 자동 분류</div>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="downloadPledgeTemplate()">📥 확약서 템플릿</button>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="openHelpModal('pledge')">📘 사용안내</button>
+          <button class="btn btn-secondary btn-sm" onclick="downloadPledgeTemplate()">📥 확약서 템플릿</button>
+        </div>
       </div>
       <div class="upload-notice">
         <span class="uni">🛡</span>
@@ -670,6 +691,7 @@
       <div class="section-header">
         <div><div class="section-title">💳 지급 입력</div><div class="section-desc">학생별·월별 재원 지급액을 입력합니다</div></div>
         <div class="flex gap-2 items-center">
+          <button class="btn btn-secondary btn-sm" onclick="openHelpModal('payment')">📘 사용안내</button>
           <div id="paymentSemBar" style="font-size:11px;color:var(--text-secondary)">학기를 먼저 선택하세요</div>
           <button class="btn btn-secondary btn-sm" onclick="renderPaymentPanel()">🔄 새로고침</button>
         </div>
@@ -681,7 +703,10 @@
     <div class="panel" id="panel-validation">
       <div class="section-header">
         <div><div class="section-title">✅ 검증 결과</div><div class="section-desc">규칙 위반 사항을 확인합니다</div></div>
-        <button class="btn btn-primary btn-sm" onclick="runValidation()">🔍 재검증</button>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="openHelpModal('validation')">📘 사용안내</button>
+          <button class="btn btn-primary btn-sm" onclick="runValidation()">🔍 재검증</button>
+        </div>
       </div>
       <div class="grid-2">
         <div class="card">
@@ -699,7 +724,27 @@
     <div class="panel" id="panel-settings">
       <div class="section-header">
         <div><div class="section-title">⚙ 시스템 설정</div><div class="section-desc">지급 기준값 및 WBS 목록을 설정합니다</div></div>
-        <button class="btn btn-primary btn-sm" onclick="saveSettings()">💾 설정 저장</button>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="openHelpModal('settings')">📘 사용안내</button>
+          <button class="btn btn-primary btn-sm" onclick="saveSettings()">💾 설정 저장</button>
+        </div>
+      </div>
+
+      <!-- 조교수당 기준금액은 다른 지급/검증 기준보다 상위 개념이므로 설정 화면 최상단에 배치 -->
+      <div class="card" style="border-color:rgba(99,102,241,0.30)">
+        <div class="card-title">💠 조교수당 기준금액 (가이드)</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:10px;line-height:1.6">학생별 지급기준금액의 기본값입니다. 학생명단 Excel에 기준금액(월)이 입력되어 있으면 업로드된 금액을 우선 적용합니다.</div>
+        <div class="grid-2">
+          <div>
+            <div class="form-row"><label class="form-label">석사 기준</label><input class="form-input input-num" id="cfg-guideMA"></div>
+            <div class="form-row"><label class="form-label">박사 기준</label><input class="form-input input-num" id="cfg-guideDR"></div>
+            <div class="form-row"><label class="form-label">TA 추가</label><input class="form-input input-num" id="cfg-guideTA"></div>
+          </div>
+          <div>
+            <div class="form-row"><label class="form-label">석사초과생 기준</label><input class="form-input input-num" id="cfg-guideMA-over"></div>
+            <div class="form-row"><label class="form-label">박사초과생·연구수료생 기준</label><input class="form-input input-num" id="cfg-guideDR-over"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Security Settings Card -->
@@ -760,17 +805,12 @@
           <div class="form-row"><label class="form-label">박사 상한</label><input class="form-input input-num" id="cfg-topDR-cap"></div>
         </div>
         <div class="card">
-          <div class="card-title">기준금액 (가이드)</div>
-          <div class="form-row"><label class="form-label">석사 기준</label><input class="form-input input-num" id="cfg-guideMA"></div>
-          <div class="form-row"><label class="form-label">박사 기준</label><input class="form-input input-num" id="cfg-guideDR"></div>
-          <div class="form-row"><label class="form-label">TA 추가</label><input class="form-input input-num" id="cfg-guideTA"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">초과 기준 (학기수)</div>
-          <div class="form-row"><label class="form-label">석사</label><input class="form-input" id="cfg-overMA" type="number"></div>
-          <div class="form-row"><label class="form-label">박사</label><input class="form-input" id="cfg-overDR" type="number"></div>
-          <div class="form-row"><label class="form-label">통합</label><input class="form-input" id="cfg-overMP" type="number"></div>
-          <div class="form-row"><label class="form-label">통합→박사전환</label><input class="form-input" id="cfg-mpTrack" type="number"></div>
+          <div class="card-title">초과 및 이공계 Track 기준</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5">입력값은 해당 기준이 <b>시작되는 학기</b>입니다.</div>
+          <div class="form-row"><label class="form-label">석사 초과생</label><div style="display:flex;align-items:center;gap:8px;flex:1"><input class="form-input" id="cfg-overMA" type="number" min="1"><span style="white-space:nowrap;color:var(--text-muted);font-size:11px">학기 이상</span></div></div>
+          <div class="form-row"><label class="form-label">박사 초과생</label><div style="display:flex;align-items:center;gap:8px;flex:1"><input class="form-input" id="cfg-overDR" type="number" min="1"><span style="white-space:nowrap;color:var(--text-muted);font-size:11px">학기 이상</span></div></div>
+          <div class="form-row"><label class="form-label">통합 초과생</label><div style="display:flex;align-items:center;gap:8px;flex:1"><input class="form-input" id="cfg-overMP" type="number" min="1"><span style="white-space:nowrap;color:var(--text-muted);font-size:11px">학기 이상</span></div></div>
+          <div class="form-row"><label class="form-label">이공계 Track (석사 → 박사)</label><div style="display:flex;align-items:center;gap:8px;flex:1"><input class="form-input" id="cfg-mpTrack" type="number" min="1"><span style="white-space:nowrap;color:var(--text-muted);font-size:11px">학기 이상</span></div></div>
         </div>
       </div>
       <div class="card">
@@ -785,8 +825,11 @@
     <!-- UNIT TEST -->
     <div class="panel" id="panel-unittest">
       <div class="section-header">
-        <div><div class="section-title">🧪 단위 테스트</div><div class="section-desc">규칙 검증 로직 자동 테스트 (37개)</div></div>
-        <button class="btn btn-primary btn-sm" onclick="runTests()">▶ 테스트 실행</button>
+        <div><div class="section-title">🧪 단위 테스트</div><div class="section-desc">규칙 검증 로직 자동 테스트 (42개)</div></div>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="openHelpModal('unittest')">📘 사용안내</button>
+          <button class="btn btn-primary btn-sm" onclick="runTests()">▶ 테스트 실행</button>
+        </div>
       </div>
       <div id="testResults"><div class="alert alert-info"><span class="alert-icon">ℹ</span>테스트 실행 버튼을 클릭하세요.</div></div>
     </div>
@@ -914,6 +957,99 @@
 })();
 
 // ============================================================
+// PAGE HELP — 메뉴별 사용안내
+// ============================================================
+var HELP_GUIDES = {
+  semester: {
+    title: '📅 학기 설정 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>1. 학년도와 학기를 입력</b><br>지급 대상 학년도와 학기를 선택한 뒤 <b>+ 추가</b>를 누릅니다.</div>' +
+      '<div class="help-step"><b>2. 작업할 학기를 선택</b><br>학기 목록에서 사용할 학기를 클릭하면 이후 예산·확약서·지급입력에 해당 학기가 적용됩니다.</div>' +
+      '<div class="help-note"><b>유의사항</b><ul><li>학생정보와 확약서를 등록하기 전에 학기를 먼저 설정하세요.</li><li>현재 선택된 학기를 기준으로 지급입력과 대시보드가 계산됩니다.</li></ul></div>' +
+      '</div>'
+  },
+  budget: {
+    title: '💰 예산 관리 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>1. 재원별 예산 입력</b><br>교비 세부항목과 BK21·학생인건비·연구비·Fellowship·이공계지원 예산을 입력합니다.</div>' +
+      '<div class="help-step"><b>2. 저장 및 집행현황 확인</b><br><b>저장</b> 후 지급입력 금액이 반영되면 하단에서 예산 대비 집행·잔여 금액을 확인할 수 있습니다.</div>' +
+      '<div class="help-note"><b>유의사항</b><ul><li>예산을 초과하면 Warning이 발생하므로 다운로드 전 확인하세요.</li><li>재원 성격에 따라 예산 미설정 시 잔여액 표시가 제한될 수 있습니다.</li></ul></div>' +
+      '</div>'
+  },
+  students: {
+    title: '👥 학생 관리 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>1. 학생명단 등록</b><br>권장 방식은 <b>템플릿 다운로드 → Excel 작성 → Excel 업로드</b>입니다. 소수 학생은 수동으로 추가할 수도 있습니다.</div>' +
+      '<div class="help-step"><b>2. 업로드 결과 확인</b><br>학위과정, 학기수, 학적상태, 지급기준, 이공계 Track, 기준금액이 올바른지 확인합니다.</div>' +
+      '<div class="help-note"><b>유의사항</b><ul><li>학위과정과 이공계 Track은 서로 다른 기준입니다.</li><li>지급기준금액이 0원인 학생은 지급입력이 제한됩니다.</li><li>학번·과정·학기수 등 핵심 정보가 잘못되면 뒤 단계 계산도 달라질 수 있습니다.</li></ul></div>' +
+      '</div>'
+  },
+  pledge: {
+    title: '📋 확약서 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>1. 학생인건비 확약서 업로드</b><br>확약서 Excel을 클릭 또는 드래그하여 업로드합니다. 등록된 학생과 선택 학기를 기준으로 내용을 적용합니다.</div>' +
+      '<div class="help-step"><b>2. 개별/기관 계정 자동 분류</b><br>WBS 번호를 기준으로 학생인건비(개별)와 학생인건비(기관)을 자동 분류합니다.</div>' +
+      '<div class="help-note"><b>유의사항</b><ul><li>학기 설정과 학생 등록을 먼저 완료하세요.</li><li>지급기준금액 0원 등 규정 위반이 있으면 확약서 적용이 차단될 수 있습니다.</li><li>처리 결과의 적용·제외·오류 건수를 반드시 확인하세요.</li></ul></div>' +
+      '</div>'
+  },
+  payment: {
+    title: '💳 지급 입력 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>1. 학생 지급표 펼치기</b><br>학생 이름이 있는 카드를 눌러 월별 지급표를 펼칩니다.</div>' +
+      '<div class="help-step"><b>2. 재원 추가 및 금액 입력</b><br><b>+ 재원 추가</b>에서 재원을 선택하고 첫 지급월의 금액을 입력합니다. 필요하면 자동분할을 사용할 수 있습니다.</div>' +
+      '<div class="help-step"><b>3. 자동계산 및 추가정보 확인</b><br>이공계 연구생활장려금은 산단 인정 재원에 따라 자동 조정됩니다. 본교 산단/대학 과제는 과제번호·계정명, 외부과제/Fellowship은 지급정보를 입력합니다.</div>' +
+      '<div class="help-note"><b>유의사항</b><ul><li>Block이 있는 경우 Excel 다운로드가 제한됩니다.</li><li>산단 인정 재원 합계가 학생인건비 계상기준을 넘으면 확인 알림이 표시됩니다.</li><li>팝업은 한 번에 하나씩 표시되며 Enter/Space로 선택, Tab/Shift+Tab으로 버튼 이동이 가능합니다.</li></ul></div>' +
+      '</div>'
+  },
+  dashboard: {
+    title: '📊 대시보드 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>전체 현황 확인</b><br>등록 학생 수, Block/Warning, 총 지급액과 재원별 예산 집행 현황을 한 화면에서 확인합니다.</div>' +
+      '<div class="help-tip"><b>권장</b><br>모든 지급입력을 마친 뒤 <b>전체 검증 실행</b>을 눌러 예산과 규정 위반 여부를 최종 확인하세요.</div>' +
+      '</div>'
+  },
+  validation: {
+    title: '✅ 검증 결과 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>Block</b><br>반드시 수정해야 하는 항목입니다. Block이 남아 있으면 Excel 다운로드가 제한됩니다.</div>' +
+      '<div class="help-step"><b>Warning</b><br>다운로드를 반드시 차단하지는 않지만 예산 초과나 금액 불일치 등 검토가 필요한 항목입니다.</div>' +
+      '<div class="help-note"><b>유의사항</b><br>지급 내용을 수정한 뒤에는 <b>재검증</b>을 실행해 최신 결과를 확인하세요.</div>' +
+      '</div>'
+  },
+  settings: {
+    title: '⚙ 시스템 설정 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>기준값 관리</b><br>조교수당 기준금액(가이드)을 최상위 기준으로 확인하고, 학생인건비 범위, BK21 최소액, 이공계지원 기준·상한, 초과·이공계 Track 기준, 기관계정 WBS 목록 등을 관리합니다.</div>' +
+      '<div class="help-tip"><b>학기 기준 읽는 법</b><br>석사·박사 5학기 이상, 통합 9학기 이상은 초과생으로 판단하며, 통합과정의 이공계 Track은 5학기 이상부터 DR로 적용합니다.</div>' +
+      '<div class="help-step"><b>개인정보 보호</b><br>다운로드 후 자동 초기화와 개인정보 보호 안내를 확인할 수 있습니다.</div>' +
+      '<div class="help-note"><b>유의사항</b><br>설정값 변경은 계산·검증 결과에 직접 영향을 줄 수 있으므로 운영 기준이 변경된 경우에만 수정하는 것을 권장합니다.</div>' +
+      '</div>'
+  },
+  unittest: {
+    title: '🧪 단위 테스트 사용안내',
+    html: '<div class="help-guide">' +
+      '<div class="help-step"><b>용도</b><br>주요 계산·검증 규칙이 정상 동작하는지 내부적으로 확인하는 관리자용 기능입니다.</div>' +
+      '<div class="help-tip"><b>일반 사용자</b><br>통상적인 지급 신청 업무에서는 별도로 실행하지 않아도 됩니다.</div>' +
+      '</div>'
+  }
+};
+
+function openHelpModal(section) {
+  var guide = HELP_GUIDES[section];
+  if (!guide) return;
+  document.getElementById('modalTitle').textContent = guide.title;
+  document.getElementById('modalBody').innerHTML = guide.html;
+  var modal = document.getElementById('modal');
+  modal.classList.add('open');
+  modal.setAttribute('data-help-modal', 'true');
+  if (typeof syncPopupInteractionState === 'function') syncPopupInteractionState();
+  setTimeout(function() {
+    var closeBtn = modal.querySelector('.modal-box > div:last-child button');
+    if (closeBtn && document.body.contains(modal)) closeBtn.focus();
+  }, 0);
+}
+
+// ============================================================
 // STATE
 // ============================================================
 var State = {
@@ -956,10 +1092,10 @@ var DEFAULT_WBS_LIST = [
 ];
 
 var DEFAULT_CONFIG = {
-  indMA_min: 220000, indMA_max: 2200000,
-  indDR_min: 300000, indDR_max: 3000000,
-  orgMA_min: 440000, orgMA_max: 2200000,
-  orgDR_min: 600000, orgDR_max: 3000000,
+  indMA_min: 220000, indMA_max: 3000000,
+  indDR_min: 300000, indDR_max: 4000000,
+  orgMA_min: 440000, orgMA_max: 3000000,
+  orgDR_min: 600000, orgDR_max: 4000000,
   bkMA_min:  1000000, bkDR_min: 1600000, bkSuryo_min: 1300000,
   bkMA_semLim: 4, bkDR_semLim: 8, bkMP_semLim: 12,  // BK21 지원 가능 최대 학기
   topMA_base: 1500000, topMA_cap: 800000,
@@ -968,9 +1104,12 @@ var DEFAULT_CONFIG = {
   personnelUG_cap: 1800000,
   personnelMA_cap: 3000000,
   personnelDR_cap: 4000000,
-  guideMA: 1500000, guideDR: 1800000, guideTA: 150000,
+  // 조교수당 기준금액(가이드)
+  guideMA: 1850000, guideDR: 2200000,
+  guideMA_over: 1260670, guideDR_over: 1610670, guideTA: 150000,
+  // 초과 기준 및 통합과정 이공계 Track DR 적용 시작 학기
   overMA: 5, overDR: 5, overMP: 9,
-  mpTrackBound: 4,
+  mpTrackDRStart: 5,
   wbsList: DEFAULT_WBS_LIST.slice()
 };
 
@@ -1114,7 +1253,7 @@ function toast(msg, type) {
   c.appendChild(el);
   setTimeout(function() { el.remove(); }, 3500);
 }
-function closeModal() { document.getElementById('modal').classList.remove('open'); focusCurrentPopup(); }
+function closeModal() { var m=document.getElementById('modal'); m.classList.remove('open'); m.removeAttribute('data-help-modal'); focusCurrentPopup(); }
 
 // ============================================================
 // 공통 팝업 키보드 접근성
@@ -1423,15 +1562,22 @@ function isBkOver(st) {
   return parseInt(st.semCount, 10) > lim[st.course];
 }
 function getTrack(st) {
-  if (st.course === 'MP') return st.semCount <= Config.mpTrackBound ? 'MA' : 'DR';
+  // 통합과정은 이공계 Track 기준상 DR 적용 시작 학기부터 DR로 분류
+  if (st.course === 'MP') return parseInt(st.semCount, 10) >= Config.mpTrackDRStart ? 'DR' : 'MA';
   return st.course;
 }
 function getGuideAmount(st) {
   // 엑셀에서 업로드한 기준금액이 있으면 우선 사용
   if (st.guideAmount != null && st.guideAmount > 0) return st.guideAmount;
-  // 없으면 기존 기본값으로 자동 계산
+
+  // 업로드 금액이 없는 경우 설정의 조교수당 가이드 기준으로 자동 계산
+  var criteria = String(st.criteria || '');
+  if (criteria.indexOf('파견') >= 0) return 0;
+  if (criteria.indexOf('석사초과') >= 0) return Config.guideMA_over;
+  if (criteria.indexOf('박사초과') >= 0 || st.status === '수료(연구생)') return Config.guideDR_over;
+
   var base = getTrack(st) === 'MA' ? Config.guideMA : Config.guideDR;
-  if (st.criteria === 'TA') base += Config.guideTA;
+  if (criteria === 'TA') base += Config.guideTA;
   return base;
 }
 
@@ -4495,13 +4641,15 @@ function loadSettings() {
   document.getElementById('cfg-topMA-cap').value  = fmt(Config.topMA_cap);
   document.getElementById('cfg-topDR-base').value = fmt(Config.topDR_base);
   document.getElementById('cfg-topDR-cap').value  = fmt(Config.topDR_cap);
-  document.getElementById('cfg-guideMA').value    = fmt(Config.guideMA);
-  document.getElementById('cfg-guideDR').value    = fmt(Config.guideDR);
-  document.getElementById('cfg-guideTA').value    = fmt(Config.guideTA);
+  document.getElementById('cfg-guideMA').value       = fmt(Config.guideMA);
+  document.getElementById('cfg-guideDR').value       = fmt(Config.guideDR);
+  document.getElementById('cfg-guideMA-over').value  = fmt(Config.guideMA_over);
+  document.getElementById('cfg-guideDR-over').value  = fmt(Config.guideDR_over);
+  document.getElementById('cfg-guideTA').value       = fmt(Config.guideTA);
   document.getElementById('cfg-overMA').value  = Config.overMA;
   document.getElementById('cfg-overDR').value  = Config.overDR;
   document.getElementById('cfg-overMP').value  = Config.overMP;
-  document.getElementById('cfg-mpTrack').value = Config.mpTrackBound;
+  document.getElementById('cfg-mpTrack').value = Config.mpTrackDRStart;
   document.getElementById('cfg-wbs').value = Config.wbsList.join(',');
 }
 
@@ -4521,13 +4669,15 @@ function saveSettings() {
   Config.topMA_cap  = parseNum(document.getElementById('cfg-topMA-cap').value);
   Config.topDR_base = parseNum(document.getElementById('cfg-topDR-base').value);
   Config.topDR_cap  = parseNum(document.getElementById('cfg-topDR-cap').value);
-  Config.guideMA    = parseNum(document.getElementById('cfg-guideMA').value);
-  Config.guideDR    = parseNum(document.getElementById('cfg-guideDR').value);
-  Config.guideTA    = parseNum(document.getElementById('cfg-guideTA').value);
+  Config.guideMA       = parseNum(document.getElementById('cfg-guideMA').value);
+  Config.guideDR       = parseNum(document.getElementById('cfg-guideDR').value);
+  Config.guideMA_over  = parseNum(document.getElementById('cfg-guideMA-over').value);
+  Config.guideDR_over  = parseNum(document.getElementById('cfg-guideDR-over').value);
+  Config.guideTA       = parseNum(document.getElementById('cfg-guideTA').value);
   Config.overMA  = parseInt(document.getElementById('cfg-overMA').value) || 5;
   Config.overDR  = parseInt(document.getElementById('cfg-overDR').value) || 5;
   Config.overMP  = parseInt(document.getElementById('cfg-overMP').value) || 9;
-  Config.mpTrackBound = parseInt(document.getElementById('cfg-mpTrack').value) || 4;
+  Config.mpTrackDRStart = parseInt(document.getElementById('cfg-mpTrack').value) || 5;
   var wbsRaw = document.getElementById('cfg-wbs').value;
   Config.wbsList = wbsRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
   updateWbsDisplay();
@@ -4603,10 +4753,10 @@ function runTests() {
     { name:'T15: 통합 5학기 → DR트랙', fn: function() { return getTrack({course:'MP',semCount:5})==='DR'; }},
     { name:'T16: 순수석사 → MA', fn: function() { return getTrack({course:'MA',semCount:3})==='MA'; }},
     { name:'T17: 순수박사 → DR', fn: function() { return getTrack({course:'DR',semCount:3})==='DR'; }},
-    { name:'T18: 석사 기준금액 1500000', fn: function() { return getGuideAmount({course:'MA',semCount:1,status:'재학',criteria:'일반'})===1500000; }},
-    { name:'T19: 박사 기준금액 1800000', fn: function() { return getGuideAmount({course:'DR',semCount:1,status:'재학',criteria:'일반'})===1800000; }},
-    { name:'T20: TA 추가 150000 (석사)', fn: function() { return getGuideAmount({course:'MA',semCount:1,status:'재학',criteria:'TA'})===1650000; }},
-    { name:'T21: TA/2인 변경없음 (박사)', fn: function() { return getGuideAmount({course:'DR',semCount:1,status:'재학',criteria:'TA/2인'})===1800000; }},
+    { name:'T18: 석사 기준금액 1850000', fn: function() { return getGuideAmount({course:'MA',semCount:1,status:'재학',criteria:'일반'})===1850000; }},
+    { name:'T19: 박사 기준금액 2200000', fn: function() { return getGuideAmount({course:'DR',semCount:1,status:'재학',criteria:'일반'})===2200000; }},
+    { name:'T20: TA 추가 150000 (석사)', fn: function() { return getGuideAmount({course:'MA',semCount:1,status:'재학',criteria:'TA'})===2000000; }},
+    { name:'T21: TA/2인 변경없음 (박사)', fn: function() { return getGuideAmount({course:'DR',semCount:1,status:'재학',criteria:'TA/2인'})===2200000; }},
     { name:'T22: 1학기 3~8월', fn: function() { var m=getSemMonths(2026,1); return m.length===6&&m[0].month===3&&m[5].month===8; }},
     { name:'T23: 2학기 9~익년2월', fn: function() { var m=getSemMonths(2026,2); return m.length===6&&m[0].month===9&&m[5].month===2&&m[5].year===2027; }},
     { name:'T24: 기본 기관계정 WBS → 기관계정', fn: function() { return Config.wbsList.includes(DEFAULT_WBS_LIST[0]); }},
@@ -4677,6 +4827,12 @@ function runTests() {
         var fm = getMissingSourceMetaFields('test','t','fellow1');
         return em.join('/')==='지급기관/연구책임자' && fm.join('/')==='지급기관/장학금/Fellowship';
       } finally { State.sourceMeta = oldMeta; State.studentSources = oldRows; }
+    }},
+    { name:'T41: 석사초과생 가이드 1260670', fn: function() {
+      return getGuideAmount({course:'MA',semCount:5,status:'재학',criteria:'석사초과'})===1260670;
+    }},
+    { name:'T42: 박사초과·연구수료 가이드 1610670', fn: function() {
+      return getGuideAmount({course:'DR',semCount:5,status:'수료(연구생)',criteria:'박사초과'})===1610670;
     }},
   ];
 
