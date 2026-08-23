@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>포스텍 화학과 대학원생 조교수당 통합계산 및 신청서</title>
-<!-- v13: 학기 선택 UX, 팝업 키보드 접근성, Excel 서식/틀고정 보강 -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.min.js';"></script>
+<!-- v14: 팝업 스택 키보드 제어 수정, Excel 서식/틀고정 저장 검증 보강 -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/jszip@3.10.1/dist/jszip.min.js';"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -510,11 +510,12 @@
       <div class="card">
         <div class="card-title">학기 추가</div>
         <div class="form-row">
-          <label class="form-label">학기</label>
-          <select class="form-select" id="semesterPreset" style="max-width:180px">
-            <option value="2026_1">2026년 1학기</option>
-            <option value="2026_2" selected>2026년 2학기</option>
-            <option value="2027_1">2027년 1학기</option>
+          <label class="form-label">학년도</label>
+          <input class="form-input" id="newYear" type="number" value="2026" min="2020" max="2040" style="max-width:100px">
+          <label class="form-label" style="min-width:40px">학기</label>
+          <select class="form-select" id="newSem" style="max-width:100px">
+            <option value="1">1학기</option>
+            <option value="2" selected>2학기</option>
           </select>
           <button class="btn btn-primary btn-sm" onclick="addSemester()">+ 추가</button>
         </div>
@@ -1113,7 +1114,7 @@ function toast(msg, type) {
   c.appendChild(el);
   setTimeout(function() { el.remove(); }, 3500);
 }
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); focusCurrentPopup(); }
 
 // ============================================================
 // 공통 팝업 키보드 접근성
@@ -1123,13 +1124,12 @@ function closeModal() { document.getElementById('modal').classList.remove('open'
 // - Escape: 안전하게 닫을 수 있는 팝업만 닫기
 // ============================================================
 function isPopupVisible(el) {
-  if (!el) return false;
-  if (el.classList && el.classList.contains('open')) return true;
+  if (!el || !document.body.contains(el)) return false;
   var cs = window.getComputedStyle(el);
-  return cs.display !== 'none' && cs.visibility !== 'hidden';
+  return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0';
 }
 
-function getActivePopupRoot() {
+function getPopupCandidates() {
   var ids = [
     'generic-confirm-overlay',
     'download-confirm-overlay',
@@ -1140,11 +1140,29 @@ function getActivePopupRoot() {
     'clearOverlay',
     'privacyOverlay'
   ];
-  for (var i = 0; i < ids.length; i++) {
-    var el = document.getElementById(ids[i]);
-    if (isPopupVisible(el)) return el;
-  }
-  return null;
+  return ids.map(function(id) { return document.getElementById(id); })
+    .filter(function(el) { return isPopupVisible(el); });
+}
+
+// 실제 화면에서 가장 위에 보이는 팝업을 선택한다.
+// z-index가 같으면 DOM에서 나중에 추가된 팝업이 위에 있는 것으로 처리한다.
+function getActivePopupRoot() {
+  var roots = getPopupCandidates();
+  if (!roots.length) return null;
+  var best = roots[0];
+  var bestZ = parseInt(window.getComputedStyle(best).zIndex, 10);
+  if (isNaN(bestZ)) bestZ = 0;
+
+  roots.slice(1).forEach(function(el) {
+    var z = parseInt(window.getComputedStyle(el).zIndex, 10);
+    if (isNaN(z)) z = 0;
+    var laterInDom = !!(best.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+    if (z > bestZ || (z === bestZ && laterInDom)) {
+      best = el;
+      bestZ = z;
+    }
+  });
+  return best;
 }
 
 function getPopupFocusable(root) {
@@ -1157,30 +1175,83 @@ function getPopupFocusable(root) {
   });
 }
 
+function getPopupPrimary(root) {
+  if (!root) return null;
+  return root.querySelector('[data-popup-primary="true"]') || getPopupFocusable(root)[0] || null;
+}
+
+// 최상단 팝업 이외의 팝업은 키보드/마우스 상호작용 대상에서 제외한다.
+// 특히 뒤쪽 팝업 버튼에 포커스가 남아 있는 상태에서 Enter/Space가 전달되는 것을 방지한다.
+function syncPopupInteractionState() {
+  var roots = getPopupCandidates();
+  var activeRoot = getActivePopupRoot();
+  roots.forEach(function(root) {
+    if (root === activeRoot) {
+      root.removeAttribute('inert');
+      root.removeAttribute('aria-hidden');
+      root.setAttribute('aria-modal', 'true');
+    } else {
+      root.setAttribute('inert', '');
+      root.setAttribute('aria-hidden', 'true');
+      root.removeAttribute('aria-modal');
+    }
+  });
+  return activeRoot;
+}
+
+// 뒤쪽 팝업의 예약된 focus()가 나중에 실행되어도 현재 활성 팝업의 포커스를 빼앗지 못하게 한다.
+function focusPopupElementIfActive(root, target, delay) {
+  syncPopupInteractionState();
+  setTimeout(function() {
+    if (!root || !target || !document.body.contains(root) || !document.body.contains(target)) return;
+    if (syncPopupInteractionState() !== root) return;
+    target.focus();
+  }, delay || 0);
+}
+
+function focusCurrentPopup() {
+  syncPopupInteractionState();
+  setTimeout(function() {
+    var root = syncPopupInteractionState();
+    if (!root) return;
+    var active = document.activeElement;
+    if (active && root.contains(active)) return;
+    var target = root.querySelector('[data-popup-autofocus="true"]') || getPopupPrimary(root);
+    if (target) target.focus();
+  }, 0);
+}
+
 function closePopupByEscape(root) {
   if (!root) return;
   if (root.id === 'privacyOverlay') return; // 동의 전에는 닫지 않음
-  if (root.id === 'clearOverlay') { closeClearConfirm(); return; }
-  if (root.id === 'upload-result-overlay') { closeUploadResult(); return; }
-  if (root.id === 'modal') { closeModal(); return; }
+  if (root.id === 'clearOverlay') { closeClearConfirm(); focusCurrentPopup(); return; }
+  if (root.id === 'upload-result-overlay') { closeUploadResult(); focusCurrentPopup(); return; }
+  if (root.id === 'modal') { closeModal(); focusCurrentPopup(); return; }
   if (root.id === 'pay-alert-overlay') { closePayAlert(); return; }
-  if (root.id === 'generic-confirm-overlay' && root.parentNode) { root.parentNode.removeChild(root); return; }
+  if (root.id === 'generic-confirm-overlay' && root.parentNode) { root.parentNode.removeChild(root); focusCurrentPopup(); return; }
   if (root.parentNode && (root.id === 'autofill-overlay' || root.id === 'download-confirm-overlay')) {
     root.parentNode.removeChild(root);
+    focusCurrentPopup();
   }
 }
 
-document.addEventListener('keydown', function(e) {
-  var root = getActivePopupRoot();
+var popupConsumedActivationKey = null;
+
+function handlePopupKeydown(e) {
+  var root = syncPopupInteractionState();
   if (!root) return;
 
   var focusables = getPopupFocusable(root);
   var active = document.activeElement;
-  var idx = focusables.indexOf(active);
+  // 현재 포커스가 뒤쪽 팝업이나 본문에 있으면 현재 팝업의 포커스로 취급하지 않는다.
+  if (!active || !root.contains(active)) active = null;
+  var idx = active ? focusables.indexOf(active) : -1;
 
   if (e.key === 'Tab') {
     if (!focusables.length) return;
     e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
     if (idx < 0) idx = e.shiftKey ? 0 : -1;
     idx = (idx + (e.shiftKey ? -1 : 1) + focusables.length) % focusables.length;
     focusables[idx].focus();
@@ -1189,49 +1260,64 @@ document.addEventListener('keydown', function(e) {
 
   if (e.key === 'Escape') {
     e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
     closePopupByEscape(root);
     return;
   }
 
   var tag = active && active.tagName ? active.tagName.toLowerCase() : '';
-  var isTextInput = tag === 'textarea' || (tag === 'input' && active.type !== 'button' && active.type !== 'submit' && active.type !== 'checkbox' && active.type !== 'radio');
+  var type = active && active.type ? String(active.type).toLowerCase() : '';
+  var isTextInput = tag === 'textarea' || (tag === 'input' && type !== 'button' && type !== 'submit' && type !== 'checkbox' && type !== 'radio');
+  var primary = getPopupPrimary(root);
 
   if (e.key === 'Enter') {
-    if (active && (tag === 'button' || active.type === 'button' || active.type === 'submit')) {
-      e.preventDefault();
+    // 캡처 단계에서 기본 동작을 막아 뒤쪽 버튼의 브라우저 기본 click이 먼저 실행되지 않게 한다.
+    popupConsumedActivationKey = e.code || 'Enter';
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+    if (active && (tag === 'button' || type === 'button' || type === 'submit')) {
       active.click();
-      return;
-    }
-    if (isTextInput) {
-      var primary = root.querySelector('[data-popup-primary="true"]');
-      if (primary && !primary.disabled) {
-        e.preventDefault();
-        primary.click();
-      }
-      return;
-    }
-    if (active && (active.type === 'checkbox' || active.type === 'radio')) {
-      e.preventDefault();
+    } else if (active && (type === 'checkbox' || type === 'radio')) {
       active.click();
-      return;
-    }
-    if (focusables.length) {
-      e.preventDefault();
-      var primary2 = root.querySelector('[data-popup-primary="true"]') || focusables[0];
-      if (primary2 && typeof primary2.click === 'function') primary2.click();
+    } else if (primary && !primary.disabled) {
+      primary.click();
     }
     return;
   }
 
-  if (e.key === ' ') {
-    // 텍스트 입력란에서는 공백 입력을 그대로 허용
-    if (isTextInput || tag === 'textarea') return;
-    if (active && (tag === 'button' || active.type === 'checkbox' || active.type === 'radio')) {
-      e.preventDefault();
+  if (e.key === ' ' || e.code === 'Space') {
+    // 현재 최상단 팝업의 문자 입력란에서는 공백 입력을 허용한다.
+    if (active && isTextInput) return;
+    popupConsumedActivationKey = e.code || 'Space';
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+    if (active && (tag === 'button' || type === 'button' || type === 'submit' || type === 'checkbox' || type === 'radio')) {
       active.click();
+    } else if (primary && !primary.disabled) {
+      primary.click();
     }
   }
-});
+}
+
+// 반드시 캡처 단계(true)에서 처리한다.
+// 포커스가 뒤쪽 팝업 버튼에 남아 있더라도 브라우저의 기본 Enter/Space click보다 먼저 차단하기 위함이다.
+document.addEventListener('keydown', handlePopupKeydown, true);
+
+// Space는 브라우저에서 keyup 시점에 버튼 click이 발생할 수 있습니다.
+// 앞 팝업을 keydown에서 닫은 직후 뒤 팝업이 포커스를 되찾더라도 같은 키의 keyup이
+// 뒤 팝업을 연속 실행하지 못하도록 한 번 더 차단합니다. Enter도 동일하게 보호합니다.
+document.addEventListener('keyup', function(e) {
+  if (!popupConsumedActivationKey) return;
+  var code = e.code || (e.key === 'Enter' ? 'Enter' : (e.key === ' ' ? 'Space' : e.key));
+  if (code !== popupConsumedActivationKey && !(popupConsumedActivationKey === 'Space' && e.key === ' ')) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+  popupConsumedActivationKey = null;
+}, true);
 
 // 공통 Y/N 확인 팝업 — native confirm 대신 사용
 function showConfirmDialog(title, msg, onYes, yesLabel, noLabel) {
@@ -1259,9 +1345,11 @@ function showConfirmDialog(title, msg, onYes, yesLabel, noLabel) {
   var noBtn = document.createElement('button');
   noBtn.className = 'btn btn-secondary';
   noBtn.textContent = noLabel || '아니오';
+  noBtn.setAttribute('data-popup-autofocus', 'true');
   noBtn.onclick = function(e) {
     e.stopPropagation();
     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    focusCurrentPopup();
   };
 
   var yesBtn = document.createElement('button');
@@ -1272,6 +1360,7 @@ function showConfirmDialog(title, msg, onYes, yesLabel, noLabel) {
     e.stopPropagation();
     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     if (typeof onYes === 'function') onYes();
+    focusCurrentPopup();
   };
 
   btnWrap.appendChild(noBtn);
@@ -1284,7 +1373,7 @@ function showConfirmDialog(title, msg, onYes, yesLabel, noLabel) {
   document.body.appendChild(overlay);
 
   // 파괴적/삭제 계열은 기본적으로 '아니오'에 포커스하여 오입력을 방지
-  setTimeout(function() { noBtn.focus(); }, 50);
+  focusPopupElementIfActive(overlay, noBtn, 50);
 }
 
 // ============================================================
@@ -1481,18 +1570,22 @@ function hasPaymentForSource(semId, studentId, sourceKey, months) {
 }
 
 function getMissingSourceMetaFields(semId, studentId, sourceKey) {
+  var src = getSourceCodeForMeta(semId, studentId, sourceKey);
+  var cfg = getSourceMetaUiConfig(src);
   var meta = getSourceMeta(semId, studentId, sourceKey);
   var missing = [];
-  if (!meta || !String(meta.projectNo || '').trim()) missing.push('과제번호');
-  if (!meta || !String(meta.accountName || '').trim()) missing.push('계정명');
+  if (!meta || !String(meta.projectNo || '').trim()) missing.push(cfg.field1Label || '정보1');
+  if (!meta || !String(meta.accountName || '').trim()) missing.push(cfg.field2Label || '정보2');
   return missing;
 }
 
-// 과제번호/계정명 필수입력 대상 재원
-// 본교 내부 과제번호 체계를 사용하는 두 재원에만 적용합니다.
-// 그 외(BK21, 학생인건비 개별/기관, 이공계, 외부과제, 외부장학금/Fellowship, 교비)는 과제번호/계정명 Block 대상이 아닙니다.
+// 지급 재원별 필수 정보 입력 대상
+// - 본교 산단/대학 회계 과제: 과제번호 + 계정명
+// - 외부 과제 인건비: 지급기관 + 연구책임자
+// - 외부장학금/Fellowship: 지급기관 + 장학금/Fellowship
+// BK21, 학생인건비(개별/기관), 이공계 연구생활장려금, 교비는 제외합니다.
 function requiresSourceMeta(src) {
-  return src === 'univ' || src === 'univRes';
+  return src === 'univ' || src === 'univRes' || src === 'ext' || src === 'fellow';
 }
 
 // ============================================================
@@ -1651,18 +1744,22 @@ function runValidation() {
         warns.push({ student: st.name, id: st.id, msg: '이공계지원 연속 월 금액 불일치' });
     });
 
-    // ── 추가 재원 과제정보 필수입력 체크 ──────────────────────────
-    // 실제 지급액이 있는 사용자 추가 재원 중, 과제정보 확인이 가능한 재원만 검사합니다.
-    // 필수 대상: 본교 산단 회계 과제 인건비 / 본교 대학 회계 과제 인건비 / 교비
-    // 예외: BK21 / 외부 과제 인건비 / 외부장학금·Fellowship / 학생인건비(개별·기관) / 이공계 연구생활장려금
+    // ── 추가 재원 필수정보 입력 체크 ─────────────────────────────
+    // 실제 지급액이 있는 사용자 추가 재원 중 아래 항목을 검사합니다.
+    // 본교 산단/대학 회계 과제: 과제번호 + 계정명
+    // 외부 과제 인건비: 지급기관 + 연구책임자
+    // 외부장학금/Fellowship: 지급기관 + 장학금/Fellowship
+    // 예외: BK21 / 교비 / 학생인건비(개별·기관) / 이공계 연구생활장려금
     addedRows.forEach(function(row) {
       if (!requiresSourceMeta(row.src)) return;
       if (!hasPaymentForSource(semId, st.id, row.key, months)) return;
       var missing = getMissingSourceMetaFields(semId, st.id, row.key);
       if (missing.length) {
+        var metaCfg = getSourceMetaUiConfig(row.src);
         blocks.push({
           student: st.name, id: st.id,
-          msg: '[필수입력] ' + (row.label || SOURCE_LABELS[row.src] || row.src) + ' — ' + missing.join('·') + ' 미입력 (지급입력의 ✎ 과제정보에서 입력 필요)'
+          msg: '[필수입력] ' + (row.label || SOURCE_LABELS[row.src] || row.src) + ' — ' + missing.join('·') +
+               ' 미입력 (지급입력의 ' + (metaCfg.buttonLabel || '정보 입력') + '에서 입력 필요)'
         });
       }
     });
@@ -1767,12 +1864,9 @@ function renderValidation() {
 // SEMESTER
 // ============================================================
 function addSemester() {
-  var presetEl = document.getElementById('semesterPreset');
-  var preset = presetEl ? String(presetEl.value || '') : '';
-  var parts = preset.split('_');
-  var year = parseInt(parts[0], 10);
-  var sem  = parseInt(parts[1], 10);
-  if (!year || !sem) { toast('학기를 선택하세요', 'err'); return; }
+  var year = parseInt(document.getElementById('newYear').value, 10);
+  var sem  = parseInt(document.getElementById('newSem').value, 10);
+  if (!year || !sem) { toast('학년도/학기를 입력하세요', 'err'); return; }
   var id = year + '_' + sem;
   if (State.semesters.find(function(s) { return s.id === id; })) { toast('이미 등록된 학기입니다', 'err'); return; }
   State.semesters.push({ id: id, year: year, sem: sem, months: getSemMonths(year, sem) });
@@ -3341,11 +3435,12 @@ function showPayAlert(title, msg) {
   overlay.onclick = function(e) { if (e.target === overlay) closePayAlert(); };
 
   document.body.appendChild(overlay);
-  setTimeout(function() { btn.focus(); }, 50);
+  focusPopupElementIfActive(overlay, btn, 50);
 }
 function closePayAlert() {
   var el = document.getElementById('pay-alert-overlay');
-  if (el) el.parentNode.removeChild(el);
+  if (el && el.parentNode) el.parentNode.removeChild(el);
+  focusCurrentPopup();
 }
 
 // 자동분할 입력 프롬프트 (모든 재원 공통)
@@ -3377,7 +3472,8 @@ function showAutoFillPrompt(semId, studentId, key, firstMonth, amount, months, s
   noBtn.style.cssText = 'padding:10px 24px;border-radius:6px;border:1px solid var(--border-bright);background:var(--bg-card2);color:var(--text-secondary);cursor:pointer;font-size:13px;min-width:140px';
   noBtn.onclick = function(e) { 
     e.stopPropagation(); 
-    document.body.removeChild(overlay); 
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    focusCurrentPopup();
   };
 
   var yesBtn = document.createElement('button');
@@ -3386,7 +3482,7 @@ function showAutoFillPrompt(semId, studentId, key, firstMonth, amount, months, s
   yesBtn.style.cssText = 'padding:10px 24px;border-radius:6px;border:1px solid var(--accent-indigo);background:var(--accent-indigo);color:#fff;cursor:pointer;font-size:13px;font-weight:600;min-width:140px';
   yesBtn.onclick = function(e) {
     e.stopPropagation();
-    document.body.removeChild(overlay);
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     
     // 나머지 5개월에 동일 금액 자동 입력
     var filled = 0;
@@ -3434,6 +3530,7 @@ function showAutoFillPrompt(semId, studentId, key, firstMonth, amount, months, s
     }
 
     toast(filled + '개월 자동 입력 완료 (' + fmt(amount) + '원/월)', 'ok');
+    focusCurrentPopup();
   };
 
   btnWrap.appendChild(noBtn);
@@ -3443,10 +3540,10 @@ function showAutoFillPrompt(semId, studentId, key, firstMonth, amount, months, s
   box.appendChild(btnWrap);
   overlay.appendChild(box);
 
-  overlay.onclick = function(e) { if (e.target === overlay) document.body.removeChild(overlay); };
+  overlay.onclick = function(e) { if (e.target === overlay && overlay.parentNode) { overlay.parentNode.removeChild(overlay); focusCurrentPopup(); } };
   
   document.body.appendChild(overlay);
-  setTimeout(function() { yesBtn.focus(); }, 100);
+  focusPopupElementIfActive(overlay, yesBtn, 100);
   
 }
 
@@ -3504,7 +3601,7 @@ function showDownloadConfirm(sem) {
   overlay.onclick = function(e) { if (e.target === overlay) document.body.removeChild(overlay); };
   
   document.body.appendChild(overlay);
-  setTimeout(function() { dashBtn.focus(); }, 100);
+  focusPopupElementIfActive(overlay, dashBtn, 100);
   
 }
 
@@ -3673,7 +3770,7 @@ function applyHeaderRangeStyle(ws, startRow, startCol, endRow, endCol, fillRgb, 
       var cell = ensureSheetCell(ws, r, c);
       var prevFont = cell.s.font || {};
       if (bold) cell.s.font = Object.assign({}, prevFont, { bold:true });
-      if (fillRgb) cell.s.fill = { patternType:'solid', fgColor:{ rgb:fillRgb } };
+      if (fillRgb) cell.s.fill = { patternType:'solid', fgColor:{ rgb:fillRgb }, bgColor:{ rgb:fillRgb } };
       if (center) {
         var prevAlign = cell.s.alignment || {};
         cell.s.alignment = Object.assign({}, prevAlign, { horizontal:'center', vertical:'center' });
@@ -3711,28 +3808,69 @@ function injectFreezePaneXml(xml, frozenRows) {
   return xml.replace(/(<worksheet\b[^>]*>)/, '$1<sheetViews><sheetView workbookViewId="0">' + paneXml + '</sheetView></sheetViews>');
 }
 
+function getWorksheetXmlPath(wb, sheetName) {
+  var idx = wb.SheetNames.indexOf(sheetName);
+  return idx >= 0 ? 'xl/worksheets/sheet' + (idx + 1) + '.xml' : null;
+}
+
+function xmlCellHasStyle(xml, cellRef) {
+  var re = new RegExp('<c\\b(?=[^>]*\\br="' + cellRef + '")(?=[^>]*\\bs="[1-9][0-9]*")[^>]*>');
+  return re.test(xml);
+}
+
 async function writeWorkbookWithFreezePanes(wb, fname) {
-  var raw = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+  if (typeof XLSX === 'undefined') throw new Error('Excel 모듈(XLSX)을 불러오지 못했습니다. 인터넷 연결 후 페이지를 새로고침해주세요.');
+  // plain SheetJS가 로드되면 셀 스타일이 저장되지 않으므로 다운로드 자체를 막는다.
+  if (!XLSX.style_version) throw new Error('Excel 서식 모듈(xlsx-js-style)이 정상 로드되지 않았습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.');
+  if (typeof JSZip === 'undefined') throw new Error('틀 고정 처리를 위한 JSZip 모듈을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.');
 
-  // JSZip 로드 실패 시 서식/데이터 다운로드는 유지하고, 틀 고정만 생략
-  if (typeof JSZip === 'undefined') {
-    XLSX.writeFile(wb, fname);
-    toast('⚠ Excel 파일은 저장되었지만 틀 고정 기능을 적용하지 못했습니다.', 'warn');
-    return;
-  }
-
+  // cellStyles 옵션을 명시하여 셀 스타일 직렬화를 보장한다.
+  var raw = XLSX.write(wb, { bookType:'xlsx', type:'array', cellStyles:true });
   var zip = await JSZip.loadAsync(raw);
+
   var freezeTargets = [
-    { path:'xl/worksheets/sheet2.xml', rows:1 }, // 지급내역: 1행 고정
-    { path:'xl/worksheets/sheet3.xml', rows:2 }  // 요약: 1~2행 고정
+    { sheetName:'지급내역', rows:1 },
+    { sheetName:'요약', rows:2 }
   ];
 
   for (var i = 0; i < freezeTargets.length; i++) {
     var target = freezeTargets[i];
-    var entry = zip.file(target.path);
-    if (!entry) continue;
+    var path = getWorksheetXmlPath(wb, target.sheetName);
+    if (!path) throw new Error(target.sheetName + ' 시트 경로를 찾지 못했습니다.');
+    var entry = zip.file(path);
+    if (!entry) throw new Error(target.sheetName + ' 시트 XML을 찾지 못했습니다.');
     var xml = await entry.async('string');
-    zip.file(target.path, injectFreezePaneXml(xml, target.rows));
+    xml = injectFreezePaneXml(xml, target.rows);
+    // 실제 XML에 freeze pane이 들어갔는지 즉시 검증
+    if (xml.indexOf('state="frozen"') === -1 || xml.indexOf('ySplit="' + target.rows + '"') === -1) {
+      throw new Error(target.sheetName + ' 시트의 틀 고정 적용에 실패했습니다.');
+    }
+    zip.file(path, xml);
+  }
+
+  // 스타일도 최종 XLSX 내부에 실제로 직렬화됐는지 검증한다.
+  var stylesEntry = zip.file('xl/styles.xml');
+  if (!stylesEntry) throw new Error('Excel 스타일 정보를 생성하지 못했습니다.');
+  var stylesXml = await stylesEntry.async('string');
+  if (!/D9D9D9/i.test(stylesXml) || !/F2F2F2/i.test(stylesXml)) {
+    throw new Error('요청한 헤더 채우기 색상이 Excel 파일에 기록되지 않았습니다.');
+  }
+  if (!/style="thin"/i.test(stylesXml) || !/<b\/?\s*>/i.test(stylesXml)) {
+    throw new Error('요청한 표 테두리 또는 제목 Bold 서식이 Excel 파일에 기록되지 않았습니다.');
+  }
+
+  var budgetPath = getWorksheetXmlPath(wb, '예산check');
+  var detailPath = getWorksheetXmlPath(wb, '지급내역');
+  var summaryPath = getWorksheetXmlPath(wb, '요약');
+  var budgetXml = budgetPath && zip.file(budgetPath) ? await zip.file(budgetPath).async('string') : '';
+  var detailXml = detailPath && zip.file(detailPath) ? await zip.file(detailPath).async('string') : '';
+  var summaryXml = summaryPath && zip.file(summaryPath) ? await zip.file(summaryPath).async('string') : '';
+  if (!xmlCellHasStyle(budgetXml, 'A5') || !xmlCellHasStyle(detailXml, 'A1') ||
+      !xmlCellHasStyle(summaryXml, 'A1') || !xmlCellHasStyle(summaryXml, 'A2')) {
+    throw new Error('Excel 표/제목 서식이 셀에 연결되지 않았습니다.');
+  }
+  if (budgetXml.indexOf('<cols>') === -1 || detailXml.indexOf('<cols>') === -1 || summaryXml.indexOf('<cols>') === -1) {
+    throw new Error('요청한 Excel 열 너비가 파일에 기록되지 않았습니다.');
   }
 
   var blob = await zip.generateAsync({
@@ -4092,7 +4230,9 @@ async function proceedDownload(sem) {
       setTimeout(function() { confirmClearAll(); toast('데이터 자동 초기화 완료', 'ok'); }, 3000);
     }
   } catch(e) {
-    toast('다운로드 취소 또는 실패 — 데이터 유지됨', 'warn');
+    var errMsg = (e && e.message) ? e.message : String(e || '알 수 없는 오류');
+    toast('다운로드 실패 — 데이터 유지됨', 'warn');
+    showPayAlert('⚠ Excel 생성 오류', errMsg + '\n\n입력 데이터는 삭제하지 않았습니다.');
   }
 }
 
@@ -4106,7 +4246,7 @@ function applySheetFont(ws) {
       if (!ws[addr]) continue;
       if (!ws[addr].s) ws[addr].s = {};
       var prevFont = ws[addr].s.font || {};
-      ws[addr].s.font = Object.assign({}, prevFont, { name: prevFont.name || '맑은 고딕', sz: 10 });
+      ws[addr].s.font = Object.assign({}, prevFont, { name:'맑은 고딕', sz:10 });
     }
   }
 }
@@ -4408,9 +4548,9 @@ function runTests() {
       State.payments['test']={t:{ind:{1:900000},org:{1:0}}};
       return getPaymentStandardAmount(st)===0 && computeTopup(st,'test',1)===0;
     }},
-    { name:'T38: 과제정보 필수 대상은 본교산단/대학회계만', fn: function() {
-      return requiresSourceMeta('univ') && requiresSourceMeta('univRes') && !requiresSourceMeta('kyob') &&
-             !requiresSourceMeta('bk') && !requiresSourceMeta('ext') && !requiresSourceMeta('fellow');
+    { name:'T38: 필수정보 대상은 본교과제/외부과제/Fellowship', fn: function() {
+      return requiresSourceMeta('univ') && requiresSourceMeta('univRes') && requiresSourceMeta('ext') && requiresSourceMeta('fellow') &&
+             !requiresSourceMeta('kyob') && !requiresSourceMeta('bk') && !requiresSourceMeta('ind') && !requiresSourceMeta('org') && !requiresSourceMeta('topup');
     }},
     { name:'T39: 재원별 입력 UI 라벨/예시', fn: function() {
       var u=getSourceMetaUiConfig('univ'), ur=getSourceMetaUiConfig('univRes');
@@ -4418,6 +4558,20 @@ function runTests() {
       return u.field1Placeholder==='예: 4.0012345.00 형식' && ur.field1Placeholder==='예: 2.0012345.00 형식' &&
              e.field1Label==='지급기관' && e.field2Label==='연구책임자' &&
              f.field1Label==='지급기관' && f.field2Label==='장학금/Fellowship';
+    }},
+    { name:'T40: 외부재원 누락 필드명은 지급정보 기준', fn: function() {
+      var oldMeta = State.sourceMeta;
+      var oldRows = State.studentSources;
+      try {
+        State.sourceMeta = { test: { t: { ext1:{projectNo:'',accountName:''}, fellow1:{projectNo:'',accountName:''} } } };
+        State.studentSources = { test: { t: [
+          {key:'ext1',src:'ext',label:'외부 과제 인건비',isSandan:true},
+          {key:'fellow1',src:'fellow',label:'외부장학금/Fellowship',isSandan:true}
+        ] } };
+        var em = getMissingSourceMetaFields('test','t','ext1');
+        var fm = getMissingSourceMetaFields('test','t','fellow1');
+        return em.join('/')==='지급기관/연구책임자' && fm.join('/')==='지급기관/장학금/Fellowship';
+      } finally { State.sourceMeta = oldMeta; State.studentSources = oldRows; }
     }},
   ];
 
