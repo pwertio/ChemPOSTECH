@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>포스텍 화학과 대학원생 조교수당 통합계산 및 신청서</title>
-<!-- v15.2: 지급입력·확약서 결과·검증·다운로드 알림의 부족금액 강조 통일 -->
+<!-- v15.3: BK21 최소액 미달 입력의 화면·계산값 동시 취소 및 합계·검증 갱신 -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/jszip@3.10.1/dist/jszip.min.js';"></script>
 <style>
@@ -486,7 +486,7 @@
       <div class="logo-icon">⚗</div>
       <div>
         <div class="header-title">포스텍 화학과 대학원생 조교수당 통합계산 및 신청서</div>
-        <div class="header-sub">Chemistry Dept. TA Payment Integration System · v15.2</div>
+        <div class="header-sub">Chemistry Dept. TA Payment Integration System · v15.3</div>
       </div>
     </div>
     <div class="header-nav">
@@ -10576,10 +10576,8 @@ function setPaymentRow(semId, studentId, key, month, val) {
     }
   }
 
-  // ── 값 저장 (산단 여부 무관하게 일단 저장) ─────────────────
-  setPaymentRaw(semId, studentId, key, month, val);
-
   // ── BK21 최소금액 미달 입력 차단 ───────────────────────────
+  var rejectedBkInput = null;
   if (rowObj && rowObj.src === 'bk') {
     var bkTrack  = getTrack(st);
     var bkMin2   = st.status === '수료(연구생)' ? Config.bkSuryo_min
@@ -10587,20 +10585,26 @@ function setPaymentRow(semId, studentId, key, month, val) {
     var bkLabel2 = st.status === '수료(연구생)' ? '박사수료'
                  : (bkTrack === 'MA' ? '석사' : '박사');
     if (val > 0 && val < bkMin2) {
-      showPayAlert('⛔ BK21 재원 입력 확인 필요',
-        st.name + ' ' + month + '월\n' +
-        '입력금액: ' + fmt(val) + '원\n' +
-        bkLabel2 + ' BK21 최소금액: ' + fmt(bkMin2) + '원\n\n' +
-        '최소 기준을 확인해주세요.');
+      rejectedBkInput = {
+        title: '⛔ BK21 재원 입력 확인 필요',
+        msg: st.name + ' ' + month + '월\n' +
+             '입력금액: ' + fmt(val) + '원\n' +
+             bkLabel2 + ' BK21 최소금액: ' + fmt(bkMin2) + '원\n\n' +
+             '입력값을 취소했습니다. 최소 기준을 확인해주세요.'
+      };
       var bkEl3 = document.querySelector('[data-sid="' + studentId + '"][data-src="' + key + '"][data-month="' + month + '"]');
       if (bkEl3) bkEl3.value = '';
-      return;
+      // 화면에서 지운 금액은 계산 데이터에서도 제거하고 공통 갱신을 수행한다.
+      val = 0;
     }
   }
 
+  // 기준 검사를 마친 금액만 저장한다. 취소된 입력은 화면과 동일하게 0원 처리한다.
+  setPaymentRaw(semId, studentId, key, month, val);
+
   // 팝업을 즉시 겹쳐 띄우지 않고, 현재 입력에서 발생한 안내를 순서대로 큐에 넣는다.
   // 1) 이공계/계상기준 안내 → 2) BK21 부분입력 안내 또는 자동분할 순서
-  var inputAlert = null;
+  var inputAlert = rejectedBkInput;
   var deferredBkAlert = null;
   var deferredAutoFill = null;
 
@@ -10630,7 +10634,7 @@ function setPaymentRow(semId, studentId, key, month, val) {
   }
 
   // ── 산단 재원인 경우: 이공계 기준 및 학생인건비 계상기준 확인 ──
-  if (rowObj && rowObj.isSandan) {
+  if (!rejectedBkInput && rowObj && rowObj.isSandan) {
     var track = getTrack(st);
     var base  = track === 'MA' ? Config.topMA_base : Config.topDR_base;
     var sandanNow = getSandanSum(semId, st, month); // 이공계지원(topup) 제외
